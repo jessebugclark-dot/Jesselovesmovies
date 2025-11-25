@@ -13,6 +13,13 @@ export function generateOrderCode(): string {
 }
 
 /**
+ * Convert camelCase to snake_case for Supabase
+ */
+export function toSnakeCase(str: string): string {
+  return str.replace(/[A-Z]/g, letter => `_${letter.toLowerCase()}`);
+}
+
+/**
  * Calculate total amount based on number of tickets
  * One ticket gives access to all 3 movies at the festival
  */

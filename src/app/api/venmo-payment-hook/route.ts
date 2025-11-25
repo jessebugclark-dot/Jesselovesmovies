@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { prisma } from '@/lib/db';
+import { supabase } from '@/lib/supabase';
 import { sendTicketEmail } from '@/lib/email';
 
 export async function POST(request: NextRequest) {
@@ -27,11 +27,13 @@ export async function POST(request: NextRequest) {
     }
 
     // Find the order
-    const order = await prisma.order.findUnique({
-      where: { orderCode },
-    });
+    const { data: order, error: fetchError } = await supabase
+      .from('orders')
+      .select('*')
+      .eq('order_code', orderCode)
+      .single();
 
-    if (!order) {
+    if (fetchError || !order) {
       return NextResponse.json(
         { error: 'Order not found' },
         { status: 404 }
@@ -51,7 +53,7 @@ export async function POST(request: NextRequest) {
 
     // Validate amount if provided
     if (amount !== undefined) {
-      const expectedAmount = order.totalAmount;
+      const expectedAmount = order.total_amount;
       const receivedAmount = parseFloat(amount);
       
       // Allow small rounding differences (within 1 cent)
@@ -59,13 +61,13 @@ export async function POST(request: NextRequest) {
         console.warn(`Amount mismatch for order ${orderCode}: expected ${expectedAmount}, received ${receivedAmount}`);
         
         // Flag for manual review but don't auto-process
-        await prisma.order.update({
-          where: { id: order.id },
-          data: {
-            payerName,
-            paymentNote: paymentNote || `AMOUNT MISMATCH: Received $${receivedAmount}`,
-          },
-        });
+        await supabase
+          .from('orders')
+          .update({
+            payer_name: payerName,
+            payment_note: paymentNote || `AMOUNT MISMATCH: Received $${receivedAmount}`,
+          })
+          .eq('id', order.id);
 
         return NextResponse.json(
           { 
@@ -79,15 +81,25 @@ export async function POST(request: NextRequest) {
     }
 
     // Update order to paid
-    const updatedOrder = await prisma.order.update({
-      where: { id: order.id },
-      data: {
+    const { data: updatedOrder, error: updateError } = await supabase
+      .from('orders')
+      .update({
         status: 'paid',
-        paidAt: new Date(),
-        payerName,
-        paymentNote,
-      },
-    });
+        paid_at: new Date().toISOString(),
+        payer_name: payerName,
+        payment_note: paymentNote,
+      })
+      .eq('id', order.id)
+      .select()
+      .single();
+
+    if (updateError || !updatedOrder) {
+      console.error('Error updating order:', updateError);
+      return NextResponse.json(
+        { error: 'Failed to update order' },
+        { status: 500 }
+      );
+    }
 
     // Send ticket email
     const emailSent = await sendTicketEmail(updatedOrder);
@@ -98,7 +110,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json(
         { 
           message: 'Order marked as paid but email failed to send',
-          orderCode: updatedOrder.orderCode,
+          orderCode: updatedOrder.order_code,
           emailSent: false,
         },
         { status: 200 }
@@ -107,7 +119,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({
       message: 'Payment processed and ticket sent',
-      orderCode: updatedOrder.orderCode,
+      orderCode: updatedOrder.order_code,
       emailSent: true,
     });
   } catch (error) {
@@ -118,4 +130,3 @@ export async function POST(request: NextRequest) {
     );
   }
 }
-

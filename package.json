@@ -10,13 +10,12 @@
     "listen-venmo": "tsx scripts/venmo-listener.ts"
   },
   "dependencies": {
-    "@prisma/client": "^6.19.0",
+    "@supabase/supabase-js": "^2.84.0",
     "dotenv": "^17.2.3",
     "imap": "^0.8.19",
     "mailparser": "^3.9.0",
     "next": "16.0.4",
     "nodemailer": "^7.0.10",
-    "prisma": "^6.19.0",
     "qrcode": "^1.5.4",
     "react": "19.2.0",
     "react-dom": "19.2.0",

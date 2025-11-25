@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { prisma } from '@/lib/db';
+import { supabase } from '@/lib/supabase';
 import { sendTicketEmail } from '@/lib/email';
 
 export async function POST(request: NextRequest) {
@@ -15,11 +15,13 @@ export async function POST(request: NextRequest) {
     }
 
     // Find the order
-    const order = await prisma.order.findUnique({
-      where: { orderCode },
-    });
+    const { data: order, error: fetchError } = await supabase
+      .from('orders')
+      .select('*')
+      .eq('order_code', orderCode)
+      .single();
 
-    if (!order) {
+    if (fetchError || !order) {
       return NextResponse.json(
         { error: 'Order not found' },
         { status: 404 }
@@ -55,4 +57,3 @@ export async function POST(request: NextRequest) {
     );
   }
 }
-

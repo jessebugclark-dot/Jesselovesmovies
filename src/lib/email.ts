@@ -1,6 +1,6 @@
 import nodemailer from 'nodemailer';
 import QRCode from 'qrcode';
-import { Order } from './db';
+import { Order } from './supabase';
 import { FESTIVAL_MOVIES } from './order-utils';
 
 // Create reusable transporter
@@ -43,7 +43,7 @@ async function generateTicketQR(orderCode: string): Promise<string> {
  * Generate HTML email template for ticket confirmation
  */
 async function generateTicketEmailHTML(order: Order): Promise<string> {
-  const qrCode = await generateTicketQR(order.orderCode);
+  const qrCode = await generateTicketQR(order.order_code);
   
   const moviesHtml = FESTIVAL_MOVIES.map(movie => `
     <div style="margin-bottom: 20px; padding: 15px; background-color: ${movie.isPremiere ? '#FEF3C7' : '#F3F4F6'}; border-radius: 8px; border-left: 4px solid ${movie.isPremiere ? '#F59E0B' : '#6B7280'};">
@@ -86,7 +86,7 @@ async function generateTicketEmailHTML(order: Order): Promise<string> {
           <div style="background-color: #F9FAFB; padding: 25px; border-radius: 8px; margin-bottom: 30px; border: 2px dashed #D1D5DB;">
             <div style="text-align: center; margin-bottom: 20px;">
               <div style="font-size: 14px; color: #6B7280; text-transform: uppercase; margin-bottom: 5px;">Ticket Code</div>
-              <div style="font-size: 28px; font-weight: bold; color: #111827; font-family: monospace;">${order.orderCode}</div>
+              <div style="font-size: 28px; font-weight: bold; color: #111827; font-family: monospace;">${order.order_code}</div>
             </div>
             
             ${qrCode ? `
@@ -103,11 +103,11 @@ async function generateTicketEmailHTML(order: Order): Promise<string> {
               </div>
               <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
                 <span style="color: #6B7280;">Number of Tickets:</span>
-                <span style="color: #111827; font-weight: 600;">${order.numTickets}</span>
+                <span style="color: #111827; font-weight: 600;">${order.num_tickets}</span>
               </div>
               <div style="display: flex; justify-content: space-between;">
                 <span style="color: #6B7280;">Total Paid:</span>
-                <span style="color: #10B981; font-weight: bold; font-size: 18px;">$${order.totalAmount.toFixed(2)}</span>
+                <span style="color: #10B981; font-weight: bold; font-size: 18px;">$${order.total_amount.toFixed(2)}</span>
               </div>
             </div>
           </div>
@@ -165,10 +165,10 @@ Thank you for your purchase! Your payment has been confirmed and your tickets ar
 
 TICKET DETAILS
 --------------
-Ticket Code: ${order.orderCode}
+Ticket Code: ${order.order_code}
 Ticket Holder: ${order.name}
-Number of Tickets: ${order.numTickets}
-Total Paid: $${order.totalAmount.toFixed(2)}
+Number of Tickets: ${order.num_tickets}
+Total Paid: $${order.total_amount.toFixed(2)}
 
 YOUR FESTIVAL SCHEDULE
 ----------------------
@@ -202,7 +202,7 @@ export async function sendTicketEmail(order: Order): Promise<boolean> {
     const info = await transporter.sendMail({
       from: process.env.SMTP_FROM || '"Film Festival" <noreply@filmfestival.com>',
       to: order.email,
-      subject: `Your Film Festival Tickets - Order ${order.orderCode}`,
+      subject: `Your Film Festival Tickets - Order ${order.order_code}`,
       text: textContent,
       html: htmlContent,
     });

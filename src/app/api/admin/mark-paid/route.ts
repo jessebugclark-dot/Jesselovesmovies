@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { prisma } from '@/lib/db';
+import { supabase } from '@/lib/supabase';
 import { sendTicketEmail } from '@/lib/email';
 
 export async function POST(request: NextRequest) {
@@ -15,11 +15,13 @@ export async function POST(request: NextRequest) {
     }
 
     // Find the order
-    const order = await prisma.order.findUnique({
-      where: { orderCode },
-    });
+    const { data: order, error: fetchError } = await supabase
+      .from('orders')
+      .select('*')
+      .eq('order_code', orderCode)
+      .single();
 
-    if (!order) {
+    if (fetchError || !order) {
       return NextResponse.json(
         { error: 'Order not found' },
         { status: 404 }
@@ -35,14 +37,24 @@ export async function POST(request: NextRequest) {
     }
 
     // Update order to paid
-    const updatedOrder = await prisma.order.update({
-      where: { id: order.id },
-      data: {
+    const { data: updatedOrder, error: updateError } = await supabase
+      .from('orders')
+      .update({
         status: 'paid',
-        paidAt: new Date(),
-        payerName: 'Manual Admin Override',
-      },
-    });
+        paid_at: new Date().toISOString(),
+        payer_name: 'Manual Admin Override',
+      })
+      .eq('id', order.id)
+      .select()
+      .single();
+
+    if (updateError || !updatedOrder) {
+      console.error('Error updating order:', updateError);
+      return NextResponse.json(
+        { error: 'Failed to update order' },
+        { status: 500 }
+      );
+    }
 
     // Send ticket email
     const emailSent = await sendTicketEmail(updatedOrder);
@@ -65,4 +77,3 @@ export async function POST(request: NextRequest) {
     );
   }
 }
-

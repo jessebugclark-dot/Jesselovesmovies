@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { prisma } from '@/lib/db';
+import { supabase } from '@/lib/supabase';
 import { generateOrderCode, calculateTotalAmount } from '@/lib/order-utils';
 
 export async function POST(request: NextRequest) {
@@ -35,9 +35,11 @@ export async function POST(request: NextRequest) {
     let orderCode = generateOrderCode();
     let attempts = 0;
     while (attempts < 5) {
-      const existing = await prisma.order.findUnique({
-        where: { orderCode },
-      });
+      const { data: existing } = await supabase
+        .from('orders')
+        .select('id')
+        .eq('order_code', orderCode)
+        .single();
       if (!existing) break;
       orderCode = generateOrderCode();
       attempts++;
@@ -46,26 +48,36 @@ export async function POST(request: NextRequest) {
     const totalAmount = calculateTotalAmount(numTickets);
 
     // Create order
-    const order = await prisma.order.create({
-      data: {
-        orderCode,
+    const { data: order, error } = await supabase
+      .from('orders')
+      .insert({
+        order_code: orderCode,
         name,
         email,
-        numTickets,
-        totalAmount,
+        num_tickets: numTickets,
+        total_amount: totalAmount,
         status: 'pending',
-      },
-    });
+      })
+      .select()
+      .single();
+
+    if (error) {
+      console.error('Error creating order:', error);
+      return NextResponse.json(
+        { error: 'Failed to create order' },
+        { status: 500 }
+      );
+    }
 
     const venmoHandle = process.env.VENMO_HANDLE || '@YourVenmoHandle';
-    const venmoNote = `FF24 ${orderCode} ${email}`;
+    const venmoNote = `FF24 ${order.order_code} ${email}`;
 
     return NextResponse.json({
-      orderCode: order.orderCode,
+      orderCode: order.order_code,
       name: order.name,
       email: order.email,
-      numTickets: order.numTickets,
-      totalAmount: order.totalAmount,
+      numTickets: order.num_tickets,
+      totalAmount: order.total_amount,
       venmoHandle,
       venmoNote,
     });

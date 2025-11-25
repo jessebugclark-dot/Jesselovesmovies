@@ -1,4 +1,4 @@
-import { prisma } from '@/lib/db';
+import { supabase } from '@/lib/supabase';
 import { FESTIVAL_MOVIES } from '@/lib/order-utils';
 
 type Props = {
@@ -8,9 +8,11 @@ type Props = {
 export default async function VerifyTicketPage({ params }: Props) {
   const { orderCode } = await params;
   
-  const order = await prisma.order.findUnique({
-    where: { orderCode: orderCode.toUpperCase() },
-  });
+  const { data: order } = await supabase
+    .from('orders')
+    .select('*')
+    .eq('order_code', orderCode.toUpperCase())
+    .single();
 
   if (!order) {
     return (
@@ -33,7 +35,7 @@ export default async function VerifyTicketPage({ params }: Props) {
           <p className="text-gray-400 mb-4">
             This ticket has not been paid for yet.
           </p>
-          <p className="text-sm text-gray-500">Order: {order.orderCode}</p>
+          <p className="text-sm text-gray-500">Order: {order.order_code}</p>
         </div>
       </div>
     );
@@ -52,7 +54,7 @@ export default async function VerifyTicketPage({ params }: Props) {
           <div className="grid grid-cols-2 gap-4 text-sm">
             <div>
               <div className="text-gray-400 mb-1">Order Code</div>
-              <div className="font-mono font-bold text-lg text-white">{order.orderCode}</div>
+              <div className="font-mono font-bold text-lg text-white">{order.order_code}</div>
             </div>
             <div>
               <div className="text-gray-400 mb-1">Ticket Holder</div>
@@ -60,11 +62,11 @@ export default async function VerifyTicketPage({ params }: Props) {
             </div>
             <div>
               <div className="text-gray-400 mb-1">Number of Tickets</div>
-              <div className="font-semibold text-white">{order.numTickets}</div>
+              <div className="font-semibold text-white">{order.num_tickets}</div>
             </div>
             <div>
               <div className="text-gray-400 mb-1">Amount Paid</div>
-              <div className="font-semibold text-green-500">${order.totalAmount.toFixed(2)}</div>
+              <div className="font-semibold text-green-500">${order.total_amount.toFixed(2)}</div>
             </div>
           </div>
         </div>
@@ -96,4 +98,3 @@ export default async function VerifyTicketPage({ params }: Props) {
     </div>
   );
 }
-
