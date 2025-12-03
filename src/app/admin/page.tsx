@@ -9,6 +9,7 @@ type Order = {
   email: string;
   numTickets: number;
   totalAmount: number;
+  showTime: string;
   status: string;
   createdAt: string;
   paidAt: string | null;
@@ -166,7 +167,7 @@ export default function AdminPage() {
         )}
 
         {/* Summary Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+        <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-6">
           <div className="bg-[#2a2a2a] border border-white/20 rounded-lg shadow-lg p-4">
             <div className="text-sm text-gray-400">Total Orders</div>
             <div className="text-2xl font-bold text-white">{orders.length}</div>
@@ -181,6 +182,12 @@ export default function AdminPage() {
             <div className="text-sm text-gray-400">Pending</div>
             <div className="text-2xl font-bold text-amber-500">
               {orders.filter(o => o.status === 'pending').length}
+            </div>
+          </div>
+          <div className="bg-[#2a2a2a] border border-white/20 rounded-lg shadow-lg p-4">
+            <div className="text-sm text-gray-400">Expired</div>
+            <div className="text-2xl font-bold text-red-500">
+              {orders.filter(o => o.status === 'expired').length}
             </div>
           </div>
           <div className="bg-[#2a2a2a] border border-white/20 rounded-lg shadow-lg p-4">
@@ -205,6 +212,9 @@ export default function AdminPage() {
                   </th>
                   <th className="px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">
                     Tickets
+                  </th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">
+                    Show Time
                   </th>
                   <th className="px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">
                     Amount
@@ -238,6 +248,9 @@ export default function AdminPage() {
                     <td className="px-4 py-4 whitespace-nowrap text-sm text-white">
                       {order.numTickets}
                     </td>
+                    <td className="px-4 py-4 whitespace-nowrap text-sm text-amber-400 font-medium">
+                      {order.showTime || '—'}
+                    </td>
                     <td className="px-4 py-4 whitespace-nowrap text-sm font-semibold text-white">
                       ${order.totalAmount.toFixed(2)}
                     </td>
@@ -247,6 +260,8 @@ export default function AdminPage() {
                           ? 'bg-green-500/20 text-green-400 border border-green-500/30'
                           : order.status === 'pending'
                           ? 'bg-amber-500/20 text-amber-400 border border-amber-500/30'
+                          : order.status === 'expired'
+                          ? 'bg-red-500/20 text-red-400 border border-red-500/30'
                           : 'bg-gray-500/20 text-gray-400 border border-gray-500/30'
                       }`}>
                         {order.status}
@@ -256,7 +271,7 @@ export default function AdminPage() {
                       {new Date(order.createdAt).toLocaleString()}
                     </td>
                     <td className="px-4 py-4 whitespace-nowrap text-sm space-x-2">
-                      {order.status === 'pending' && (
+                      {(order.status === 'pending' || order.status === 'expired') && (
                         <button
                           onClick={() => markAsPaid(order.orderCode)}
                           disabled={processingOrder === order.orderCode}

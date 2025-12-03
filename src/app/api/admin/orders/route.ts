@@ -24,6 +24,7 @@ export async function GET() {
       email: order.email,
       numTickets: order.num_tickets,
       totalAmount: order.total_amount,
+      showTime: order.show_time,
       status: order.status,
       createdAt: order.created_at,
       updatedAt: order.updated_at,
