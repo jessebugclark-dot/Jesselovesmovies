@@ -139,6 +139,21 @@ html {
   border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 }
 
+@media (max-width: 640px) {
+  .form-row.flex-col {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  
+  .form-row.flex-col .form-label {
+    padding-bottom: 0;
+  }
+  
+  .form-row.flex-col .form-input {
+    padding-top: 0.5rem;
+  }
+}
+
 .form-label {
   font-size: 0.7rem;
   text-transform: uppercase;
@@ -147,6 +162,17 @@ html {
   color: rgba(255, 255, 255, 0.7);
   min-width: 140px;
   padding: 1rem 1.25rem;
+}
+
+@media (max-width: 640px) {
+  .form-label {
+    min-width: auto;
+    padding: 0.75rem 1rem;
+  }
+  
+  .form-input {
+    padding: 0.75rem 1rem;
+  }
 }
 
 /* Play button overlay */
