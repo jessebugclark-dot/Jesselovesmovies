@@ -83,7 +83,7 @@ function parseVenmoEmail(mail: ParsedMail): VenmoPayment | null {
       /[Ff]or[:\s]+"([^"]+)"/,
       /[Nn]ote[:\s]+"([^"]+)"/,
       /[Mm]essage[:\s]+"([^"]+)"/,
-      /"([^"]*FF24[^"]*)"/i, // Look for our order code format
+      /"([^"]*DA25[^"]*)"/i, // Look for our order code format
     ];
 
     for (const pattern of notePatterns) {
@@ -94,8 +94,8 @@ function parseVenmoEmail(mail: ParsedMail): VenmoPayment | null {
       }
     }
 
-    // Extract order code from the note (format: FF24-XXXXXX)
-    const orderCodeMatch = paymentNote.match(/FF24-[A-Z0-9]{6}/i);
+    // Extract order code from the note (format: DA25-XXXXXX)
+    const orderCodeMatch = paymentNote.match(/DA25-[A-Z0-9]{6}/i);
     if (!orderCodeMatch) {
       console.log('No valid order code found in payment note:', paymentNote);
       return null;
