@@ -248,7 +248,7 @@ export default function TicketForm() {
 
           {/* Open Venmo Button */}
           <a
-            href={`venmo://paycharge?txn=pay&recipients=${encodeURIComponent(venmoHandle)}&amount=${confirmation.totalAmount.toFixed(2)}&note=${encodeURIComponent(confirmation.venmoNote)}`}
+            href={`venmo://paycharge?txn=pay&recipients=${encodeURIComponent(venmoHandle.replace('@', ''))}&amount=${confirmation.totalAmount.toFixed(2)}&note=${encodeURIComponent(confirmation.venmoNote)}`}
             className="w-full mt-6 cta-button flex items-center justify-center gap-2 bg-[#008CFF] border-[#008CFF] hover:bg-[#0077DD] text-white"
           >
             Open in Venmo
