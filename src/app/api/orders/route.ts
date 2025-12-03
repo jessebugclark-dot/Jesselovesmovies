@@ -2,6 +2,31 @@ import { NextRequest, NextResponse } from 'next/server';
 import { supabase } from '@/lib/supabase';
 import { generateOrderCode, calculateTotalAmount } from '@/lib/order-utils';
 
+const SEATS_PER_SHOWTIME = 220;
+const RESERVATION_MINUTES = 5;
+
+// Get available seats for a showtime
+async function getAvailableSeats(showTime: string): Promise<number> {
+  const now = new Date().toISOString();
+  
+  // Count seats from:
+  // 1. Paid orders
+  // 2. Pending orders with valid reservation (not expired)
+  const { data: orders, error } = await supabase
+    .from('orders')
+    .select('num_tickets, status, reserved_until')
+    .eq('show_time', showTime)
+    .or(`status.eq.paid,and(status.eq.pending,reserved_until.gt.${now})`);
+
+  if (error) {
+    console.error('Error fetching orders:', error);
+    return 0;
+  }
+
+  const reservedSeats = orders?.reduce((sum, order) => sum + order.num_tickets, 0) || 0;
+  return Math.max(0, SEATS_PER_SHOWTIME - reservedSeats);
+}
+
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
@@ -39,6 +64,20 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Check available seats
+    const availableSeats = await getAvailableSeats(showTime);
+    if (availableSeats < numTickets) {
+      return NextResponse.json(
+        { 
+          error: availableSeats === 0 
+            ? 'This showtime is sold out' 
+            : `Only ${availableSeats} seats remaining for this showtime`,
+          availableSeats 
+        },
+        { status: 400 }
+      );
+    }
+
     // Generate unique order code
     let orderCode = generateOrderCode();
     let attempts = 0;
@@ -54,6 +93,9 @@ export async function POST(request: NextRequest) {
     }
 
     const totalAmount = calculateTotalAmount(numTickets);
+    
+    // Set reservation expiry (5 minutes from now)
+    const reservedUntil = new Date(Date.now() + RESERVATION_MINUTES * 60 * 1000).toISOString();
 
     // Create order
     const { data: order, error } = await supabase
@@ -66,6 +108,7 @@ export async function POST(request: NextRequest) {
         total_amount: totalAmount,
         show_time: showTime,
         status: 'pending',
+        reserved_until: reservedUntil,
       })
       .select()
       .single();
@@ -81,6 +124,9 @@ export async function POST(request: NextRequest) {
     const venmoHandle = process.env.VENMO_HANDLE || '@Jesse-Clark-39';
     const venmoNote = `DA25 ${order.order_code} ${showTime} ${email}`;
 
+    // Get updated available seats
+    const remainingSeats = await getAvailableSeats(showTime);
+
     return NextResponse.json({
       orderCode: order.order_code,
       name: order.name,
@@ -90,6 +136,8 @@ export async function POST(request: NextRequest) {
       showTime: order.show_time || showTime,
       venmoHandle,
       venmoNote,
+      reservedUntil,
+      remainingSeats,
     });
   } catch (error) {
     console.error('Error creating order:', error);
@@ -99,4 +147,3 @@ export async function POST(request: NextRequest) {
     );
   }
 }
-

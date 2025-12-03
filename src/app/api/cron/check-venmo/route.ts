@@ -220,6 +220,25 @@ async function checkEmails(): Promise<{ processed: number; errors: number }> {
   });
 }
 
+// Mark expired reservations
+async function expireOldReservations(): Promise<number> {
+  const now = new Date().toISOString();
+  
+  const { data, error } = await supabase
+    .from('orders')
+    .update({ status: 'expired' })
+    .eq('status', 'pending')
+    .lt('reserved_until', now)
+    .select('id');
+
+  if (error) {
+    console.error('Error expiring reservations:', error);
+    return 0;
+  }
+
+  return data?.length || 0;
+}
+
 export async function GET(request: NextRequest) {
   // Verify the request is from Vercel Cron
   if (!verifyCronSecret(request)) {
@@ -229,12 +248,20 @@ export async function GET(request: NextRequest) {
   console.log('Cron job started: checking for Venmo payments...');
 
   try {
+    // First, expire old reservations
+    const expiredCount = await expireOldReservations();
+    if (expiredCount > 0) {
+      console.log(`Expired ${expiredCount} old reservations`);
+    }
+
+    // Then check for payments
     const results = await checkEmails();
     
     return NextResponse.json({
       success: true,
-      message: `Processed ${results.processed} payments, ${results.errors} errors`,
+      message: `Processed ${results.processed} payments, ${results.errors} errors, ${expiredCount} expired`,
       ...results,
+      expiredReservations: expiredCount,
       timestamp: new Date().toISOString(),
     });
   } catch (error) {

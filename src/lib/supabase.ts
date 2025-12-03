@@ -14,7 +14,8 @@ export type Order = {
   num_tickets: number;
   total_amount: number;
   show_time: string;
-  status: 'pending' | 'paid' | 'cancelled';
+  status: 'pending' | 'paid' | 'cancelled' | 'expired';
+  reserved_until: string | null;
   created_at: string;
   updated_at: string;
   paid_at: string | null;

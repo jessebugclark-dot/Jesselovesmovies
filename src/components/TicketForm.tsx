@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 type OrderConfirmation = {
   orderCode: string;
@@ -11,6 +11,16 @@ type OrderConfirmation = {
   showTime: string;
   venmoHandle: string;
   venmoNote: string;
+  reservedUntil: string;
+  remainingSeats: number;
+};
+
+type SeatAvailability = {
+  [key: string]: {
+    total: number;
+    reserved: number;
+    available: number;
+  };
 };
 
 // Copy to clipboard component
@@ -48,6 +58,48 @@ function CopyButton({ text, label }: { text: string; label: string }) {
   );
 }
 
+// Countdown timer component
+function CountdownTimer({ expiresAt, onExpire }: { expiresAt: string; onExpire: () => void }) {
+  const [timeLeft, setTimeLeft] = useState<number>(0);
+
+  useEffect(() => {
+    const calculateTimeLeft = () => {
+      const now = new Date().getTime();
+      const expiry = new Date(expiresAt).getTime();
+      return Math.max(0, Math.floor((expiry - now) / 1000));
+    };
+
+    setTimeLeft(calculateTimeLeft());
+
+    const interval = setInterval(() => {
+      const remaining = calculateTimeLeft();
+      setTimeLeft(remaining);
+      if (remaining <= 0) {
+        clearInterval(interval);
+        onExpire();
+      }
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, [expiresAt, onExpire]);
+
+  const minutes = Math.floor(timeLeft / 60);
+  const seconds = timeLeft % 60;
+
+  const isLow = timeLeft <= 60;
+
+  return (
+    <div className={`text-center p-3 rounded-lg ${isLow ? 'bg-red-500/20 border border-red-500/30' : 'bg-gold/10 border border-gold/30'}`}>
+      <p className={`text-xs uppercase tracking-wider mb-1 ${isLow ? 'text-red-400' : 'text-gold/70'}`}>
+        Time remaining to complete payment
+      </p>
+      <p className={`text-2xl font-mono font-bold ${isLow ? 'text-red-400' : 'text-gold'}`}>
+        {minutes}:{seconds.toString().padStart(2, '0')}
+      </p>
+    </div>
+  );
+}
+
 export default function TicketForm() {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
@@ -56,9 +108,31 @@ export default function TicketForm() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [confirmation, setConfirmation] = useState<OrderConfirmation | null>(null);
   const [error, setError] = useState('');
+  const [seats, setSeats] = useState<SeatAvailability | null>(null);
+  const [expired, setExpired] = useState(false);
 
   const ticketPrice = 10.0;
   const subtotal = numTickets * ticketPrice;
+
+  // Fetch seat availability
+  useEffect(() => {
+    const fetchSeats = async () => {
+      try {
+        const response = await fetch('/api/seats');
+        if (response.ok) {
+          const data = await response.json();
+          setSeats(data.seats);
+        }
+      } catch (err) {
+        console.error('Failed to fetch seats:', err);
+      }
+    };
+
+    fetchSeats();
+    // Refresh every 30 seconds
+    const interval = setInterval(fetchSeats, 30000);
+    return () => clearInterval(interval);
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -77,19 +151,53 @@ export default function TicketForm() {
         }),
       });
 
+      const data = await response.json();
+
       if (!response.ok) {
-        throw new Error('Failed to create order');
+        throw new Error(data.error || 'Failed to create order');
       }
 
-      const data = await response.json();
       setConfirmation(data);
     } catch (err) {
-      setError('Something went wrong. Please try again.');
+      setError(err instanceof Error ? err.message : 'Something went wrong. Please try again.');
       console.error(err);
     } finally {
       setIsSubmitting(false);
     }
   };
+
+  const handleExpire = () => {
+    setExpired(true);
+  };
+
+  const handleStartOver = () => {
+    setConfirmation(null);
+    setExpired(false);
+    setError('');
+  };
+
+  // Expired state
+  if (expired && confirmation) {
+    return (
+      <div className="bg-[#0f0f0f]/90 backdrop-blur-sm border border-white/10 rounded-lg overflow-hidden p-6 sm:p-8 text-center">
+        <div className="w-16 h-16 rounded-full bg-red-500/20 border-2 border-red-500 flex items-center justify-center mx-auto mb-4">
+          <svg className="w-8 h-8 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+        </div>
+        <h2 className="text-xl font-bold text-white mb-2">Reservation Expired</h2>
+        <p className="text-white/60 mb-6">
+          Your 5-minute window to complete payment has expired. The seats have been released.
+        </p>
+        <button
+          onClick={handleStartOver}
+          className="cta-button w-full"
+        >
+          Start Over
+        </button>
+      </div>
+    );
+  }
 
   if (confirmation) {
     const venmoHandle = '@Jesse-Clark-39';
@@ -97,6 +205,11 @@ export default function TicketForm() {
     
     return (
       <div className="bg-[#0f0f0f]/90 backdrop-blur-sm border border-white/10 rounded-lg overflow-hidden">
+        {/* Countdown Timer */}
+        <div className="p-4 border-b border-white/10">
+          <CountdownTimer expiresAt={confirmation.reservedUntil} onExpire={handleExpire} />
+        </div>
+
         {/* Header */}
         <div className="p-6 sm:p-8 text-center border-b border-white/10">
           <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-full border-2 border-gold flex items-center justify-center mx-auto mb-4">
@@ -104,8 +217,8 @@ export default function TicketForm() {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
             </svg>
           </div>
-          <h2 className="tracking-text-lg text-base sm:text-lg text-white mb-2">Order Created!</h2>
-          <p className="text-sm text-white/60">Complete your payment to receive your tickets</p>
+          <h2 className="tracking-text-lg text-base sm:text-lg text-white mb-2">Seats Reserved!</h2>
+          <p className="text-sm text-white/60">Complete payment within 5 minutes to secure your tickets</p>
           <p className="text-sm text-gold mt-2">Show Time: {confirmation.showTime}</p>
         </div>
 
@@ -162,6 +275,10 @@ export default function TicketForm() {
       </div>
     );
   }
+
+  const currentShowSeats = seats?.[showTime]?.available ?? null;
+  const otherShowTime = showTime === '7PM-8PM' ? '8PM-9PM' : '7PM-8PM';
+  const otherShowSeats = seats?.[otherShowTime]?.available ?? null;
 
   return (
     <div>
@@ -239,9 +356,12 @@ export default function TicketForm() {
               <button
                 type="button"
                 onClick={() => setShowTime('7PM-8PM')}
+                disabled={seats?.['7PM-8PM']?.available === 0}
                 className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
                   showTime === '7PM-8PM'
                     ? 'bg-gold text-black'
+                    : seats?.['7PM-8PM']?.available === 0
+                    ? 'bg-white/5 text-white/30 cursor-not-allowed'
                     : 'bg-white/10 text-white/60 hover:bg-white/20 hover:text-white'
                 }`}
               >
@@ -250,9 +370,12 @@ export default function TicketForm() {
               <button
                 type="button"
                 onClick={() => setShowTime('8PM-9PM')}
+                disabled={seats?.['8PM-9PM']?.available === 0}
                 className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
                   showTime === '8PM-9PM'
                     ? 'bg-gold text-black'
+                    : seats?.['8PM-9PM']?.available === 0
+                    ? 'bg-white/5 text-white/30 cursor-not-allowed'
                     : 'bg-white/10 text-white/60 hover:bg-white/20 hover:text-white'
                 }`}
               >
@@ -260,6 +383,26 @@ export default function TicketForm() {
               </button>
             </div>
           </div>
+
+          {/* Seats Available */}
+          {seats && (
+            <div className="form-row border-b-0 bg-white/[0.02]">
+              <span className="form-label flex-1 sm:flex-none sm:min-w-[140px]">Seats Available</span>
+              <div className="px-4 py-3 flex items-center gap-4">
+                <span className={`text-sm ${currentShowSeats !== null && currentShowSeats < 20 ? 'text-red-400' : 'text-white/60'}`}>
+                  {currentShowSeats !== null ? (
+                    currentShowSeats === 0 ? (
+                      <span className="text-red-400 font-medium">SOLD OUT</span>
+                    ) : (
+                      <>{currentShowSeats} left for {showTime}</>
+                    )
+                  ) : (
+                    'Loading...'
+                  )}
+                </span>
+              </div>
+            </div>
+          )}
 
           {/* Subtotal */}
           <div className="form-row border-b-0">
@@ -277,11 +420,13 @@ export default function TicketForm() {
         {/* Submit Button */}
         <button
           type="submit"
-          disabled={isSubmitting}
+          disabled={isSubmitting || (currentShowSeats !== null && currentShowSeats === 0)}
           className="w-full mt-6 cta-button flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed bg-white/5 py-4"
         >
           {isSubmitting ? (
             'Processing...'
+          ) : currentShowSeats === 0 ? (
+            'Sold Out'
           ) : (
             <>
               Continue to Payment
