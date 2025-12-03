@@ -4,8 +4,7 @@
  * This script monitors an email inbox for Venmo payment receipts,
  * parses the payment information, and calls the webhook to process tickets.
  * 
- * Usage:
- *   npm run listen-venmo
+ * Designed to run on Railway.app as a long-running process.
  * 
  * Environment Variables Required:
  *   - IMAP_HOST: IMAP server host (e.g., imap.gmail.com)
@@ -13,7 +12,7 @@
  *   - IMAP_USER: Email address to monitor
  *   - IMAP_PASSWORD: Email password or app password
  *   - WEBHOOK_SECRET: Secret token for authenticating with the webhook
- *   - NEXT_PUBLIC_APP_URL: Your app URL (e.g., http://localhost:3000)
+ *   - NEXT_PUBLIC_APP_URL: Your app URL (e.g., https://your-app.vercel.app)
  */
 
 import Imap from 'imap';
@@ -30,10 +29,21 @@ const imapConfig = {
   port: parseInt(process.env.IMAP_PORT || '993'),
   tls: true,
   tlsOptions: { rejectUnauthorized: false },
+  keepalive: {
+    interval: 10000,
+    idleInterval: 300000,
+    forceNoop: true
+  }
 };
 
 const WEBHOOK_URL = `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/api/venmo-payment-hook`;
 const WEBHOOK_SECRET = process.env.WEBHOOK_SECRET || '';
+
+// Reconnection settings
+const RECONNECT_DELAY = 5000; // 5 seconds
+const MAX_RECONNECT_ATTEMPTS = 10;
+let reconnectAttempts = 0;
+let imap: Imap | null = null;
 
 interface VenmoPayment {
   orderCode: string;
@@ -59,31 +69,26 @@ function parseVenmoEmail(mail: ParsedMail): VenmoPayment | null {
     const bodyContent = htmlBody ? htmlBody.toString() : textBody;
 
     // Check if this is a payment received notification
-    // Venmo subjects typically include "paid you" or "sent you"
     if (!subject.toLowerCase().includes('paid you') && !subject.toLowerCase().includes('sent you')) {
       return null;
     }
 
-    // Extract payer name from subject (e.g., "John Doe paid you")
+    // Extract payer name from subject
     const nameMatch = subject.match(/^(.+?)\s+(paid|sent)\s+you/i);
     const payerName = nameMatch ? nameMatch[1].trim() : 'Unknown';
 
-    // Extract amount - look for dollar amounts in the body
-    // Venmo typically formats as "$XX.XX" or "$X,XXX.XX"
+    // Extract amount
     const amountMatch = bodyContent.match(/\$([0-9,]+\.[0-9]{2})/);
     const amountStr = amountMatch ? amountMatch[1].replace(/,/g, '') : '0';
     const amount = parseFloat(amountStr);
 
-    // Extract payment note - this is where the order code should be
-    // Venmo notes typically appear in quotes or after "For" or "Note:"
+    // Extract payment note
     let paymentNote = '';
-    
-    // Try different patterns to extract the note
     const notePatterns = [
       /[Ff]or[:\s]+"([^"]+)"/,
       /[Nn]ote[:\s]+"([^"]+)"/,
       /[Mm]essage[:\s]+"([^"]+)"/,
-      /"([^"]*DA25[^"]*)"/i, // Look for our order code format
+      /"([^"]*DA25[^"]*)"/i,
     ];
 
     for (const pattern of notePatterns) {
@@ -94,10 +99,10 @@ function parseVenmoEmail(mail: ParsedMail): VenmoPayment | null {
       }
     }
 
-    // Extract order code from the note (format: DA25-XXXXXX)
+    // Extract order code (format: DA25-XXXXXX)
     const orderCodeMatch = paymentNote.match(/DA25-[A-Z0-9]{6}/i);
     if (!orderCodeMatch) {
-      console.log('No valid order code found in payment note:', paymentNote);
+      console.log('[SKIP] No valid order code found in payment note:', paymentNote);
       return null;
     }
 
@@ -110,7 +115,7 @@ function parseVenmoEmail(mail: ParsedMail): VenmoPayment | null {
       paymentNote,
     };
   } catch (error) {
-    console.error('Error parsing Venmo email:', error);
+    console.error('[ERROR] Parsing Venmo email:', error);
     return null;
   }
 }
@@ -120,7 +125,7 @@ function parseVenmoEmail(mail: ParsedMail): VenmoPayment | null {
  */
 async function processPayment(payment: VenmoPayment): Promise<boolean> {
   try {
-    console.log('Processing payment:', payment);
+    console.log('[PROCESS] Payment:', payment.orderCode, '$' + payment.amount);
 
     const response = await fetch(WEBHOOK_URL, {
       method: 'POST',
@@ -134,14 +139,14 @@ async function processPayment(payment: VenmoPayment): Promise<boolean> {
     const data = await response.json();
 
     if (!response.ok) {
-      console.error('Webhook error:', data);
+      console.error('[ERROR] Webhook response:', data);
       return false;
     }
 
-    console.log('Payment processed successfully:', data);
+    console.log('[SUCCESS] Payment processed:', data);
     return true;
   } catch (error) {
-    console.error('Error calling webhook:', error);
+    console.error('[ERROR] Calling webhook:', error);
     return false;
   }
 }
@@ -153,60 +158,52 @@ function processMessage(msg: any, seqno: number) {
   const parser = simpleParser(msg);
   
   parser.then(async (mail: ParsedMail) => {
-    console.log(`Processing email #${seqno}: ${mail.subject}`);
+    console.log(`[EMAIL] #${seqno}: ${mail.subject}`);
     
     const payment = parseVenmoEmail(mail);
     if (payment) {
-      console.log('Found Venmo payment:', payment.orderCode);
+      console.log('[FOUND] Venmo payment:', payment.orderCode);
       await processPayment(payment);
     }
   }).catch((err: Error) => {
-    console.error('Error parsing message:', err);
+    console.error('[ERROR] Parsing message:', err);
   });
 }
 
 /**
- * Main listener function
+ * Connect to IMAP and start listening
  */
-function startListener() {
-  console.log('Starting Venmo payment listener...');
-  console.log(`Monitoring: ${imapConfig.user}`);
-  console.log(`Webhook URL: ${WEBHOOK_URL}`);
+function connect() {
+  console.log('[INFO] Connecting to IMAP server...');
+  console.log(`[INFO] Monitoring: ${imapConfig.user}`);
+  console.log(`[INFO] Webhook: ${WEBHOOK_URL}`);
 
-  if (!imapConfig.user || !imapConfig.password) {
-    console.error('ERROR: IMAP_USER and IMAP_PASSWORD must be set in .env file');
-    process.exit(1);
-  }
-
-  if (!WEBHOOK_SECRET) {
-    console.error('ERROR: WEBHOOK_SECRET must be set in .env file');
-    process.exit(1);
-  }
-
-  const imap = new Imap(imapConfig);
+  imap = new Imap(imapConfig);
 
   imap.once('ready', () => {
-    console.log('Connected to IMAP server');
+    console.log('[CONNECTED] IMAP server ready');
+    reconnectAttempts = 0; // Reset on successful connection
 
-    imap.openBox('INBOX', false, (err, box) => {
+    imap!.openBox('INBOX', false, (err) => {
       if (err) {
-        console.error('Error opening inbox:', err);
+        console.error('[ERROR] Opening inbox:', err);
+        scheduleReconnect();
         return;
       }
 
-      console.log('Inbox opened. Listening for new emails...');
-      console.log('Press Ctrl+C to stop');
+      console.log('[READY] Inbox opened. Listening for new emails...');
+      console.log('[INFO] Server started at', new Date().toISOString());
 
       // Process existing unread emails on startup
-      imap.search(['UNSEEN', ['FROM', 'venmo.com']], (err, results) => {
+      imap!.search(['UNSEEN', ['FROM', 'venmo.com']], (err, results) => {
         if (err) {
-          console.error('Error searching for emails:', err);
+          console.error('[ERROR] Searching emails:', err);
           return;
         }
 
         if (results.length > 0) {
-          console.log(`Found ${results.length} unread Venmo emails`);
-          const fetch = imap.fetch(results, { bodies: '', markSeen: true });
+          console.log(`[INFO] Found ${results.length} unread Venmo emails`);
+          const fetch = imap!.fetch(results, { bodies: '', markSeen: true });
 
           fetch.on('message', (msg, seqno) => {
             msg.on('body', (stream) => {
@@ -215,22 +212,21 @@ function startListener() {
           });
 
           fetch.once('error', (err) => {
-            console.error('Fetch error:', err);
+            console.error('[ERROR] Fetch:', err);
           });
         } else {
-          console.log('No unread Venmo emails found');
+          console.log('[INFO] No unread Venmo emails found');
         }
       });
 
       // Listen for new incoming emails
-      imap.on('mail', (numNewMsgs: number) => {
-        console.log(`New mail detected: ${numNewMsgs} message(s)`);
+      imap!.on('mail', (numNewMsgs: number) => {
+        console.log(`[NEW MAIL] ${numNewMsgs} message(s) received`);
         
-        // Search for new unread Venmo emails
-        imap.search(['UNSEEN', ['FROM', 'venmo.com']], (err, results) => {
+        imap!.search(['UNSEEN', ['FROM', 'venmo.com']], (err, results) => {
           if (err || results.length === 0) return;
 
-          const fetch = imap.fetch(results, { bodies: '', markSeen: true });
+          const fetch = imap!.fetch(results, { bodies: '', markSeen: true });
 
           fetch.on('message', (msg, seqno) => {
             msg.on('body', (stream) => {
@@ -243,23 +239,95 @@ function startListener() {
   });
 
   imap.once('error', (err: Error) => {
-    console.error('IMAP error:', err);
+    console.error('[ERROR] IMAP:', err.message);
+    scheduleReconnect();
   });
 
   imap.once('end', () => {
-    console.log('Connection ended');
+    console.log('[DISCONNECTED] Connection ended');
+    scheduleReconnect();
+  });
+
+  imap.once('close', () => {
+    console.log('[CLOSED] Connection closed');
+    scheduleReconnect();
   });
 
   imap.connect();
+}
+
+/**
+ * Schedule a reconnection attempt
+ */
+function scheduleReconnect() {
+  if (reconnectAttempts >= MAX_RECONNECT_ATTEMPTS) {
+    console.error('[FATAL] Max reconnection attempts reached. Exiting...');
+    process.exit(1);
+  }
+
+  reconnectAttempts++;
+  const delay = RECONNECT_DELAY * reconnectAttempts;
+  console.log(`[RECONNECT] Attempt ${reconnectAttempts}/${MAX_RECONNECT_ATTEMPTS} in ${delay/1000}s...`);
+  
+  setTimeout(() => {
+    if (imap) {
+      try {
+        imap.destroy();
+      } catch (e) {
+        // Ignore
+      }
+    }
+    connect();
+  }, delay);
+}
+
+/**
+ * Main entry point
+ */
+function main() {
+  console.log('========================================');
+  console.log('   DEADARM Venmo Payment Listener');
+  console.log('========================================');
+  console.log('');
+
+  if (!imapConfig.user || !imapConfig.password) {
+    console.error('[FATAL] IMAP_USER and IMAP_PASSWORD must be set');
+    process.exit(1);
+  }
+
+  if (!WEBHOOK_SECRET) {
+    console.error('[FATAL] WEBHOOK_SECRET must be set');
+    process.exit(1);
+  }
+
+  if (!process.env.NEXT_PUBLIC_APP_URL) {
+    console.warn('[WARN] NEXT_PUBLIC_APP_URL not set, using localhost');
+  }
+
+  connect();
 
   // Handle graceful shutdown
   process.on('SIGINT', () => {
-    console.log('\nShutting down listener...');
-    imap.end();
+    console.log('\n[SHUTDOWN] Received SIGINT...');
+    if (imap) {
+      imap.end();
+    }
     process.exit(0);
   });
+
+  process.on('SIGTERM', () => {
+    console.log('\n[SHUTDOWN] Received SIGTERM...');
+    if (imap) {
+      imap.end();
+    }
+    process.exit(0);
+  });
+
+  // Keep alive log every 5 minutes
+  setInterval(() => {
+    console.log('[HEARTBEAT]', new Date().toISOString(), '- Listener active');
+  }, 5 * 60 * 1000);
 }
 
 // Start the listener
-startListener();
-
+main();
