@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import Imap from 'imap';
-import { simpleParser } from 'mailparser';
+import { simpleParser, Source } from 'mailparser';
 import { supabase } from '@/lib/supabase';
 import { sendTicketEmail } from '@/lib/email';
 
@@ -160,7 +160,7 @@ async function checkEmails(): Promise<{ processed: number; errors: number }> {
           fetch.on('message', (msg) => {
             const emailPromise = new Promise<void>((resolveEmail) => {
               msg.on('body', (stream) => {
-                simpleParser(stream, async (parseErr, mail) => {
+                simpleParser(stream as unknown as Source, async (parseErr, mail) => {
                   if (parseErr) {
                     results.errors++;
                     resolveEmail();
