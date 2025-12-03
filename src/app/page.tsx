@@ -47,7 +47,7 @@ export default function Home() {
           <div className="flex flex-wrap justify-center gap-3 mb-10">
             <span className="tag-pill">Drama</span>
             <span className="tag-pill">19 Min</span>
-            <span className="tag-pill">Saturday 7PM</span>
+            <span className="tag-pill">Saturday 7PM & 8PM</span>
             <span className="tag-pill">Director Q&A</span>
             <span className="tag-pill">Vineyard Megaplex</span>
           </div>
