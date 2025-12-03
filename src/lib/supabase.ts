@@ -13,6 +13,7 @@ export type Order = {
   email: string;
   num_tickets: number;
   total_amount: number;
+  show_time: string;
   status: 'pending' | 'paid' | 'cancelled';
   created_at: string;
   updated_at: string;

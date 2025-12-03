@@ -5,7 +5,7 @@ import { generateOrderCode, calculateTotalAmount } from '@/lib/order-utils';
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { name, email, numTickets } = body;
+    const { name, email, numTickets, showTime = '7PM' } = body;
 
     // Validation
     if (!name || !email || !numTickets) {
@@ -18,6 +18,14 @@ export async function POST(request: NextRequest) {
     if (numTickets < 1 || numTickets > 10) {
       return NextResponse.json(
         { error: 'Number of tickets must be between 1 and 10' },
+        { status: 400 }
+      );
+    }
+
+    // Validate show time
+    if (!['7PM', '9PM'].includes(showTime)) {
+      return NextResponse.json(
+        { error: 'Invalid show time' },
         { status: 400 }
       );
     }
@@ -56,6 +64,7 @@ export async function POST(request: NextRequest) {
         email,
         num_tickets: numTickets,
         total_amount: totalAmount,
+        show_time: showTime,
         status: 'pending',
       })
       .select()
@@ -70,7 +79,7 @@ export async function POST(request: NextRequest) {
     }
 
     const venmoHandle = process.env.VENMO_HANDLE || '@jesse-clark-39';
-    const venmoNote = `FF24 ${order.order_code} ${email}`;
+    const venmoNote = `FF24 ${order.order_code} ${showTime} ${email}`;
 
     return NextResponse.json({
       orderCode: order.order_code,
@@ -78,6 +87,7 @@ export async function POST(request: NextRequest) {
       email: order.email,
       numTickets: order.num_tickets,
       totalAmount: order.total_amount,
+      showTime: order.show_time || showTime,
       venmoHandle,
       venmoNote,
     });

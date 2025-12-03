@@ -8,6 +8,7 @@ type OrderConfirmation = {
   email: string;
   numTickets: number;
   totalAmount: number;
+  showTime: string;
   venmoHandle: string;
   venmoNote: string;
 };
@@ -51,6 +52,7 @@ export default function TicketForm() {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [numTickets, setNumTickets] = useState(1);
+  const [showTime, setShowTime] = useState('7PM');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [confirmation, setConfirmation] = useState<OrderConfirmation | null>(null);
   const [error, setError] = useState('');
@@ -71,6 +73,7 @@ export default function TicketForm() {
           name,
           email,
           numTickets,
+          showTime,
         }),
       });
 
@@ -103,6 +106,7 @@ export default function TicketForm() {
           </div>
           <h2 className="tracking-text-lg text-base sm:text-lg text-white mb-2">Order Created!</h2>
           <p className="text-sm text-white/60">Complete your payment to receive your tickets</p>
+          <p className="text-sm text-gold mt-2">Show Time: {confirmation.showTime}</p>
         </div>
 
         {/* Payment Instructions */}
@@ -231,7 +235,30 @@ export default function TicketForm() {
           {/* Show Time */}
           <div className="form-row">
             <span className="form-label flex-1 sm:flex-none sm:min-w-[140px]">Show Time</span>
-            <span className="px-4 py-3 text-white/60 text-right text-sm">7PM</span>
+            <div className="flex items-center gap-2 px-4 py-3">
+              <button
+                type="button"
+                onClick={() => setShowTime('7PM')}
+                className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                  showTime === '7PM'
+                    ? 'bg-gold text-black'
+                    : 'bg-white/10 text-white/60 hover:bg-white/20 hover:text-white'
+                }`}
+              >
+                7PM
+              </button>
+              <button
+                type="button"
+                onClick={() => setShowTime('9PM')}
+                className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                  showTime === '9PM'
+                    ? 'bg-gold text-black'
+                    : 'bg-white/10 text-white/60 hover:bg-white/20 hover:text-white'
+                }`}
+              >
+                9PM
+              </button>
+            </div>
           </div>
 
           {/* Subtotal */}
