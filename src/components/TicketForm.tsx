@@ -52,7 +52,7 @@ export default function TicketForm() {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [numTickets, setNumTickets] = useState(1);
-  const [showTime, setShowTime] = useState('7PM');
+  const [showTime, setShowTime] = useState('7PM-8PM');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [confirmation, setConfirmation] = useState<OrderConfirmation | null>(null);
   const [error, setError] = useState('');
@@ -92,7 +92,7 @@ export default function TicketForm() {
   };
 
   if (confirmation) {
-    const venmoHandle = '@jesse-clark-39';
+    const venmoHandle = '@Jesse-Clark-39';
     const amountText = `$${confirmation.totalAmount.toFixed(2)}`;
     
     return (
@@ -238,25 +238,25 @@ export default function TicketForm() {
             <div className="flex items-center gap-2 px-4 py-3">
               <button
                 type="button"
-                onClick={() => setShowTime('7PM')}
+                onClick={() => setShowTime('7PM-8PM')}
                 className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-                  showTime === '7PM'
+                  showTime === '7PM-8PM'
                     ? 'bg-gold text-black'
                     : 'bg-white/10 text-white/60 hover:bg-white/20 hover:text-white'
                 }`}
               >
-                7PM
+                7PM-8PM
               </button>
               <button
                 type="button"
-                onClick={() => setShowTime('8PM')}
+                onClick={() => setShowTime('8PM-9PM')}
                 className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-                  showTime === '8PM'
+                  showTime === '8PM-9PM'
                     ? 'bg-gold text-black'
                     : 'bg-white/10 text-white/60 hover:bg-white/20 hover:text-white'
                 }`}
               >
-                8PM
+                8PM-9PM
               </button>
             </div>
           </div>

@@ -5,7 +5,7 @@ import { generateOrderCode, calculateTotalAmount } from '@/lib/order-utils';
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { name, email, numTickets, showTime = '7PM' } = body;
+    const { name, email, numTickets, showTime = '7PM-8PM' } = body;
 
     // Validation
     if (!name || !email || !numTickets) {
@@ -23,7 +23,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Validate show time
-    if (!['7PM', '8PM'].includes(showTime)) {
+    if (!['7PM-8PM', '8PM-9PM'].includes(showTime)) {
       return NextResponse.json(
         { error: 'Invalid show time' },
         { status: 400 }
@@ -78,7 +78,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const venmoHandle = process.env.VENMO_HANDLE || '@jesse-clark-39';
+    const venmoHandle = process.env.VENMO_HANDLE || '@Jesse-Clark-39';
     const venmoNote = `DA25 ${order.order_code} ${showTime} ${email}`;
 
     return NextResponse.json({
