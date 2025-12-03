@@ -223,7 +223,7 @@ function startListener() {
       });
 
       // Listen for new incoming emails
-      imap.on('mail', (numNewMsgs) => {
+      imap.on('mail', (numNewMsgs: number) => {
         console.log(`New mail detected: ${numNewMsgs} message(s)`);
         
         // Search for new unread Venmo emails
