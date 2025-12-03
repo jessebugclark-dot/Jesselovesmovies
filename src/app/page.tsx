@@ -73,15 +73,15 @@ export default function Home() {
       {/* Trailer Section */}
       <section className="py-20 px-4 bg-[#0c0a0a]">
         <div className="flex justify-center">
-          <video
-            className="h-[80vh] w-auto object-cover"
-            src="/teaser.mp4#t=0.5"
-            controls
-            playsInline
-            preload="metadata"
-          >
-            Your browser does not support the video tag.
-          </video>
+          <div className="relative w-full max-w-sm aspect-[9/16]">
+            <iframe
+              className="absolute inset-0 w-full h-full"
+              src="https://drive.google.com/file/d/1xI7zMz5VIl0fb9eqKT5S484WurOD-kjA/preview"
+              title="DEADARM Trailer"
+              allow="autoplay; encrypted-media"
+              allowFullScreen
+            />
+          </div>
         </div>
       </section>
 
