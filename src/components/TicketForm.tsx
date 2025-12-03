@@ -249,14 +249,14 @@ export default function TicketForm() {
               </button>
               <button
                 type="button"
-                onClick={() => setShowTime('9PM')}
+                onClick={() => setShowTime('8PM')}
                 className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-                  showTime === '9PM'
+                  showTime === '8PM'
                     ? 'bg-gold text-black'
                     : 'bg-white/10 text-white/60 hover:bg-white/20 hover:text-white'
                 }`}
               >
-                9PM
+                8PM
               </button>
             </div>
           </div>

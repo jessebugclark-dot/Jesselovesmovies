@@ -23,7 +23,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Validate show time
-    if (!['7PM', '9PM'].includes(showTime)) {
+    if (!['7PM', '8PM'].includes(showTime)) {
       return NextResponse.json(
         { error: 'Invalid show time' },
         { status: 400 }
