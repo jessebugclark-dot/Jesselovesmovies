@@ -1,21 +1,25 @@
 @import "tailwindcss";
 
 :root {
-  --background: #212121;
+  --background: #0a0a0a;
   --foreground: #ffffff;
+  --gold: #d4a84b;
+  --gold-dark: #b8923d;
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-gold: var(--gold);
+  --font-playfair: var(--font-playfair);
+  --font-bebas: var(--font-bebas);
+  --font-dm-sans: var(--font-dm-sans);
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-dm-sans), system-ui, sans-serif;
 }
 
 /* Smooth scrolling for anchor links */
@@ -25,18 +29,150 @@ html {
 
 /* Custom scrollbar for webkit browsers */
 ::-webkit-scrollbar {
-  width: 10px;
+  width: 8px;
 }
 
 ::-webkit-scrollbar-track {
-  background: #1a1a1a;
+  background: #0a0a0a;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #404040;
-  border-radius: 5px;
+  background: #333;
+  border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #555555;
+  background: #444;
+}
+
+/* Film title styling */
+.film-title {
+  font-family: var(--font-playfair);
+  font-weight: 400;
+  letter-spacing: 0.05em;
+  font-style: italic;
+}
+
+/* Uppercase tracking text */
+.tracking-text {
+  font-family: var(--font-dm-sans);
+  text-transform: uppercase;
+  letter-spacing: 0.2em;
+  font-weight: 500;
+  font-size: 0.65rem;
+}
+
+.tracking-text-lg {
+  font-family: var(--font-dm-sans);
+  text-transform: uppercase;
+  letter-spacing: 0.15em;
+  font-weight: 500;
+}
+
+/* Bebas font for headings */
+.font-bebas {
+  font-family: var(--font-bebas);
+}
+
+/* Gold accent color */
+.text-gold {
+  color: var(--gold);
+}
+
+.bg-gold {
+  background-color: var(--gold);
+}
+
+/* Tag pills */
+.tag-pill {
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  padding: 0.5rem 1rem;
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  font-weight: 500;
+}
+
+/* CTA Button */
+.cta-button {
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  padding: 1rem 2rem;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.15em;
+  font-weight: 500;
+  transition: all 0.3s ease;
+}
+
+.cta-button:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.8);
+}
+
+/* Form input styling */
+.form-input {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  padding: 1rem 1.25rem;
+  font-size: 0.875rem;
+  color: white;
+  width: 100%;
+  transition: all 0.2s ease;
+}
+
+.form-input:focus {
+  outline: none;
+  border-color: rgba(255, 255, 255, 0.4);
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.form-input::placeholder {
+  color: rgba(255, 255, 255, 0.3);
+}
+
+/* Form row styling */
+.form-row {
+  display: flex;
+  align-items: center;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.form-label {
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.15em;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.7);
+  min-width: 140px;
+  padding: 1rem 1.25rem;
+}
+
+/* Play button overlay */
+.play-overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.4);
+  transition: background 0.3s ease;
+}
+
+.play-overlay:hover {
+  background: rgba(0, 0, 0, 0.3);
+}
+
+/* Social icon styling */
+.social-icon {
+  width: 28px;
+  height: 28px;
+  opacity: 0.9;
+  transition: opacity 0.2s ease;
+}
+
+.social-icon:hover {
+  opacity: 1;
 }

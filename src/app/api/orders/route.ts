@@ -69,7 +69,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const venmoHandle = process.env.VENMO_HANDLE || '@YourVenmoHandle';
+    const venmoHandle = process.env.VENMO_HANDLE || '@jesse-clark-39';
     const venmoNote = `FF24 ${order.order_code} ${email}`;
 
     return NextResponse.json({

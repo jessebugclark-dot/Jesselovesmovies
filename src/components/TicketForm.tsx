@@ -20,7 +20,7 @@ export default function TicketForm() {
   const [confirmation, setConfirmation] = useState<OrderConfirmation | null>(null);
   const [error, setError] = useState('');
 
-  const ticketPrice = 15.0;
+  const ticketPrice = 10.0;
   const subtotal = numTickets * ticketPrice;
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -55,143 +55,163 @@ export default function TicketForm() {
 
   if (confirmation) {
     return (
-      <div className="bg-[#2a2a2a] border border-white/20 rounded-lg shadow-2xl p-8 max-w-2xl mx-auto">
-        <div className="text-center mb-6">
-          <div className="text-6xl mb-4">✓</div>
-          <h2 className="text-3xl font-bold text-white mb-2">Order Created!</h2>
-          <p className="text-gray-300">Complete your payment to receive your tickets</p>
+      <div className="bg-[#0f0f0f]/90 backdrop-blur-sm border border-white/10">
+        <div className="p-8 text-center border-b border-white/10">
+          <div className="w-16 h-16 rounded-full border-2 border-gold flex items-center justify-center mx-auto mb-4">
+            <svg className="w-8 h-8 text-gold" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+            </svg>
+          </div>
+          <h2 className="tracking-text-lg text-lg text-white mb-2">Order Created!</h2>
+          <p className="text-sm text-white/60">Complete your payment to receive your tickets</p>
         </div>
 
-        <div className="bg-amber-500/10 border-2 border-amber-500/30 rounded-lg p-6 mb-6">
-          <h3 className="text-xl font-semibold text-white mb-4">Payment Instructions</h3>
+        <div className="p-8 border-b border-white/10">
+          <h3 className="tracking-text text-[10px] text-gold mb-6">Payment Instructions</h3>
           
-          <div className="space-y-4">
+          <div className="space-y-6">
             <div>
-              <p className="text-sm text-gray-300 mb-1">1. Open Venmo and send payment to:</p>
-              <p className="text-2xl font-bold text-white">{confirmation.venmoHandle}</p>
+              <p className="text-[11px] text-white/50 mb-1 tracking-text">1. Open Venmo and send payment to:</p>
+              <p className="text-xl font-medium text-white">@jesse-clark-39</p>
             </div>
 
             <div>
-              <p className="text-sm text-gray-300 mb-1">2. Amount to send:</p>
-              <p className="text-3xl font-bold text-amber-500">${confirmation.totalAmount.toFixed(2)}</p>
+              <p className="text-[11px] text-white/50 mb-1 tracking-text">2. Amount to send:</p>
+              <p className="text-3xl font-medium text-gold">${confirmation.totalAmount.toFixed(2)}</p>
             </div>
 
             <div>
-              <p className="text-sm text-gray-300 mb-1">3. <strong>IMPORTANT:</strong> Include this exact note:</p>
-              <div className="bg-[#1a1a1a] border border-white/20 rounded p-3 font-mono text-sm break-all text-white">
+              <p className="text-[11px] text-white/50 mb-1 tracking-text">3. Include this exact note:</p>
+              <div className="bg-black/50 border border-white/10 p-4 font-mono text-sm break-all text-white">
                 {confirmation.venmoNote}
               </div>
             </div>
           </div>
         </div>
 
-        <div className="bg-white/5 border border-white/10 rounded-lg p-4 mb-6">
-          <h4 className="font-semibold text-white mb-2">What happens next?</h4>
-          <ul className="text-sm text-gray-300 space-y-1">
-            <li>• Once your payment is received, we&apos;ll email your tickets to: <strong className="text-white">{confirmation.email}</strong></li>
-            <li>• Tickets typically arrive within 5-10 minutes</li>
-            <li>• Check your spam folder if you don&apos;t see the email</li>
-            <li>• Bring your ticket (digital or printed) to the festival</li>
+        <div className="p-8 bg-white/[0.02]">
+          <h4 className="tracking-text text-[10px] text-white/60 mb-4">What happens next?</h4>
+          <ul className="text-sm text-white/50 space-y-2">
+            <li>• Tickets will be emailed to: <span className="text-white">{confirmation.email}</span></li>
+            <li>• Typically arrives within 5-10 minutes</li>
+            <li>• Check spam folder if not received</li>
+            <li>• Bring ticket (digital or printed) to screening</li>
           </ul>
-        </div>
-
-        <div className="text-center text-sm text-gray-400">
-          <p>Order Code: <span className="font-mono font-semibold text-white">{confirmation.orderCode}</span></p>
-          <p className="mt-2">Questions? Email us at support@filmfestival.com</p>
+          <div className="mt-6 pt-6 border-t border-white/10 text-center">
+            <p className="tracking-text text-[10px] text-white/40">Order Code</p>
+            <p className="font-mono text-lg text-white mt-1">{confirmation.orderCode}</p>
+          </div>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="bg-[#2a2a2a] border border-white/20 rounded-lg shadow-2xl p-8 max-w-2xl mx-auto">
-      <h2 className="text-3xl font-bold text-white mb-6 text-center">Get Your Tickets</h2>
-      
-      <div className="bg-amber-500/10 border border-amber-500/30 rounded-lg p-4 mb-6">
-        <p className="text-sm text-gray-200">
-          <strong className="text-white">One ticket</strong> grants you access to all three film screenings!
-        </p>
+    <div>
+      {/* Section Header */}
+      <div className="text-center mb-8">
+        <h2 className="tracking-text-lg text-lg text-white mb-2">Get Your Tickets</h2>
+        <p className="tracking-text text-[10px] text-white/50">DEC 11th, 2025, Vineyard MEGAPLEX</p>
       </div>
-
-      <form onSubmit={handleSubmit} className="space-y-6">
-        <div>
-          <label htmlFor="name" className="block text-sm font-medium text-gray-200 mb-2">
-            Full Name *
-          </label>
-          <input
-            type="text"
-            id="name"
-            required
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            className="w-full px-4 py-3 bg-[#1a1a1a] border border-white/20 rounded-lg focus:ring-2 focus:ring-white focus:border-white text-white placeholder-gray-500"
-            placeholder="John Doe"
-          />
-        </div>
-
-        <div>
-          <label htmlFor="email" className="block text-sm font-medium text-gray-200 mb-2">
-            Email Address *
-          </label>
-          <input
-            type="email"
-            id="email"
-            required
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            className="w-full px-4 py-3 bg-[#1a1a1a] border border-white/20 rounded-lg focus:ring-2 focus:ring-white focus:border-white text-white placeholder-gray-500"
-            placeholder="john@example.com"
-          />
-          <p className="text-xs text-gray-400 mt-1">Your tickets will be sent to this email</p>
-        </div>
-
-        <div>
-          <label htmlFor="numTickets" className="block text-sm font-medium text-gray-200 mb-2">
-            Number of Tickets *
-          </label>
-          <select
-            id="numTickets"
-            value={numTickets}
-            onChange={(e) => setNumTickets(parseInt(e.target.value))}
-            className="w-full px-4 py-3 bg-[#1a1a1a] border border-white/20 rounded-lg focus:ring-2 focus:ring-white focus:border-white text-white"
-          >
-            {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((num) => (
-              <option key={num} value={num} className="bg-[#1a1a1a]">
-                {num} {num === 1 ? 'Ticket' : 'Tickets'}
-              </option>
-            ))}
-          </select>
-        </div>
-
-        <div className="bg-[#1a1a1a] rounded-lg p-4 border border-white/20">
-          <div className="flex justify-between items-center text-lg">
-            <span className="font-medium text-gray-200">Subtotal:</span>
-            <span className="font-bold text-white">${subtotal.toFixed(2)}</span>
+      
+      <form onSubmit={handleSubmit}>
+        {/* Form Fields */}
+        <div className="bg-[#0f0f0f]/80 backdrop-blur-sm border border-white/10">
+          {/* Venmo Username Field */}
+          <div className="form-row">
+            <label htmlFor="name" className="form-label">Venmo Username</label>
+            <input
+              type="text"
+              id="name"
+              required
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              className="form-input border-0 bg-transparent flex-1"
+              placeholder="@USERNAME"
+            />
           </div>
-          <p className="text-xs text-gray-400 mt-1">
-            ${ticketPrice.toFixed(2)} per ticket × {numTickets} ticket{numTickets !== 1 ? 's' : ''}
-          </p>
+
+          {/* Email Field */}
+          <div className="form-row">
+            <label htmlFor="email" className="form-label">Email</label>
+            <input
+              type="email"
+              id="email"
+              required
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              className="form-input border-0 bg-transparent flex-1"
+              placeholder="EMAIL@EMAIL.COM"
+            />
+          </div>
+
+          {/* Number of Tickets */}
+          <div className="form-row">
+            <label htmlFor="numTickets" className="form-label">Number of Tickets</label>
+            <div className="flex-1 px-4 py-3 flex items-center justify-end">
+              <input
+                type="number"
+                id="numTickets"
+                min="1"
+                max="10"
+                value={numTickets}
+                onChange={(e) => setNumTickets(Math.max(1, Math.min(10, parseInt(e.target.value) || 1)))}
+                className="w-16 bg-transparent text-white text-right focus:outline-none text-sm [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+              />
+              <div className="flex flex-col ml-2">
+                <button 
+                  type="button" 
+                  onClick={() => setNumTickets(Math.min(10, numTickets + 1))}
+                  className="text-white/30 hover:text-white/60 text-[10px] leading-none"
+                >
+                  ▲
+                </button>
+                <button 
+                  type="button" 
+                  onClick={() => setNumTickets(Math.max(1, numTickets - 1))}
+                  className="text-white/30 hover:text-white/60 text-[10px] leading-none"
+                >
+                  ▼
+                </button>
+              </div>
+            </div>
+          </div>
+
+          {/* Show Time */}
+          <div className="form-row">
+            <span className="form-label">Show Time</span>
+            <span className="flex-1 px-4 py-3 text-white/60 text-right text-sm">7PM</span>
+          </div>
+
+          {/* Subtotal */}
+          <div className="form-row border-b-0">
+            <span className="form-label">Subtotal</span>
+            <span className="flex-1 px-4 py-3 text-white text-right text-sm font-medium">${subtotal.toFixed(2)}</span>
+          </div>
         </div>
 
         {error && (
-          <div className="bg-red-500/10 border border-red-500/30 rounded-lg p-4 text-red-400 text-sm">
+          <div className="mt-4 bg-red-500/10 border border-red-500/30 p-4 text-red-400 text-sm text-center">
             {error}
           </div>
         )}
 
+        {/* Submit Button */}
         <button
           type="submit"
           disabled={isSubmitting}
-          className="w-full bg-white text-[#212121] font-bold py-4 px-6 rounded-full hover:bg-gray-100 transition-all transform hover:scale-105 disabled:bg-gray-600 disabled:cursor-not-allowed disabled:transform-none"
+          className="w-full mt-6 cta-button flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed bg-white/5"
         >
-          {isSubmitting ? 'Processing...' : 'Continue to Payment'}
+          {isSubmitting ? (
+            'Processing...'
+          ) : (
+            <>
+              Continue to Payment
+              <span className="text-lg">→</span>
+            </>
+          )}
         </button>
-
-        <p className="text-xs text-center text-gray-400">
-          You&apos;ll be shown payment instructions after clicking continue
-        </p>
       </form>
     </div>
   );
 }
-

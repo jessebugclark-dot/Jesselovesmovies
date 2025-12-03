@@ -24,7 +24,7 @@ export function toSnakeCase(str: string): string {
  * One ticket gives access to all 3 movies at the festival
  */
 export function calculateTotalAmount(numTickets: number): number {
-  const ticketPrice = parseFloat(process.env.TICKET_PRICE || '15.00');
+  const ticketPrice = parseFloat(process.env.TICKET_PRICE || '10.00');
   return numTickets * ticketPrice;
 }
 
