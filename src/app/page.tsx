@@ -1,5 +1,6 @@
 import TicketForm from '@/components/TicketForm';
 import TrailerPlayer from '@/components/TrailerPlayer';
+import AnimateIn from '@/components/AnimateIn';
 import Image from 'next/image';
 
 export default function Home() {
@@ -21,19 +22,21 @@ export default function Home() {
 
         {/* Header */}
         <header className="relative z-10 pt-8 text-center">
-          <Image
-            src="/logo.png"
-            alt="The Jesse Clark Film Club"
-            width={120}
-            height={60}
-            className="mx-auto"
-          />
+          <AnimateIn from="fade" duration={800}>
+            <Image
+              src="/logo.png"
+              alt="The Jesse Clark Film Club"
+              width={120}
+              height={60}
+              className="mx-auto"
+            />
+          </AnimateIn>
         </header>
 
         {/* Hero Content */}
         <div className="relative z-10 flex flex-col items-center justify-center min-h-[85vh] px-4">
           {/* Film Title */}
-          <h1 className="mb-8 w-[100%]">
+          <AnimateIn from="bottom" delay={200} duration={800} className="mb-8 w-[100%]">
             <Image
               src="/title.png"
               alt="DEADARM"
@@ -42,32 +45,38 @@ export default function Home() {
               className="w-full h-auto"
               priority
             />
-          </h1>
+          </AnimateIn>
 
           {/* Tags */}
-          <div className="flex flex-wrap justify-center gap-3 mb-10">
-            <span className="tag-pill">Drama</span>
-            <span className="tag-pill">19 Min</span>
-            <span className="tag-pill">December 22nd, 7PM & 8PM</span>
-            <span className="tag-pill">Director Q&A</span>
-            <span className="tag-pill">Vineyard Megaplex</span>
-          </div>
+          <AnimateIn from="bottom" delay={400} duration={600}>
+            <div className="flex flex-wrap justify-center gap-3 mb-10">
+              <span className="tag-pill">Drama</span>
+              <span className="tag-pill">19 Min</span>
+              <span className="tag-pill">December 22nd, 7PM & 8PM</span>
+              <span className="tag-pill">Director Q&A</span>
+              <span className="tag-pill">Vineyard Megaplex</span>
+            </div>
+          </AnimateIn>
 
           {/* CTA Button */}
-          <a href="#tickets" className="cta-button inline-flex items-center gap-2 mb-10">
-            Get Tickets Now
-            <span className="text-lg">→</span>
-          </a>
+          <AnimateIn from="bottom" delay={600} duration={600}>
+            <a href="#tickets" className="cta-button inline-flex items-center gap-2 mb-10">
+              Get Tickets Now
+              <span className="text-lg">→</span>
+            </a>
+          </AnimateIn>
 
           {/* Social Icons */}
-          <div className="flex gap-6">
-            <a href="https://instagram.com" target="_blank" rel="noopener noreferrer" className="social-icon">
-              <Image src="/insta-icon.svg" alt="Instagram" width={28} height={28} />
-            </a>
-            <a href="https://tiktok.com" target="_blank" rel="noopener noreferrer" className="social-icon">
-              <Image src="/tiktok-icon.svg" alt="TikTok" width={28} height={28} />
-            </a>
-          </div>
+          <AnimateIn from="fade" delay={800} duration={600}>
+            <div className="flex gap-6">
+              <a href="https://instagram.com" target="_blank" rel="noopener noreferrer" className="social-icon">
+                <Image src="/insta-icon.svg" alt="Instagram" width={28} height={28} />
+              </a>
+              <a href="https://tiktok.com" target="_blank" rel="noopener noreferrer" className="social-icon">
+                <Image src="/tiktok-icon.svg" alt="TikTok" width={28} height={28} />
+              </a>
+            </div>
+          </AnimateIn>
         </div>
       </section>
 
@@ -75,7 +84,7 @@ export default function Home() {
       <section className="py-20 px-4 bg-black overflow-hidden">
         <div className="relative flex justify-center items-center min-h-[70vh]">
           {/* Fanned out background image */}
-          <div className="absolute inset-0 flex justify-center items-center">
+          <AnimateIn from="fade" duration={1000} className="absolute inset-0 flex justify-center items-center">
             <Image
               src="/screenfan.png"
               alt="Scene collage"
@@ -83,15 +92,15 @@ export default function Home() {
               height={600}
               className="h-[70vh] w-auto object-contain opacity-90"
             />
-          </div>
+          </AnimateIn>
           
           {/* Video container */}
-          <div className="relative z-10 h-[65vh] aspect-[9/16]">
+          <AnimateIn from="bottom" delay={200} duration={800} className="relative z-10 h-[65vh] aspect-[9/16]">
             <TrailerPlayer
               thumbnailSrc="/thumbnail.png"
               videoSrc="https://drive.google.com/file/d/1xI7zMz5VIl0fb9eqKT5S484WurOD-kjA/preview"
             />
-          </div>
+          </AnimateIn>
         </div>
       </section>
 
@@ -108,9 +117,9 @@ export default function Home() {
           <div className="absolute inset-0 bg-gradient-to-r from-[#0a0a0a] via-[#0a0a0a]/95 to-transparent" />
         </div>
 
-        <div className="relative z-10 max-w-xl mx-auto">
+        <AnimateIn from="bottom" duration={800} className="relative z-10 max-w-xl mx-auto">
           <TicketForm />
-        </div>
+        </AnimateIn>
       </section>
 
       {/* Footer */}
