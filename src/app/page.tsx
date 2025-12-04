@@ -69,10 +69,10 @@ export default function Home() {
           {/* Social Icons */}
           <AnimateIn from="fade" delay={800} duration={600}>
             <div className="flex gap-6">
-              <a href="https://instagram.com" target="_blank" rel="noopener noreferrer" className="social-icon">
+              <a href="https://instagram.com/deadarmmovie" target="_blank" rel="noopener noreferrer" className="social-icon">
                 <Image src="/insta-icon.svg" alt="Instagram" width={28} height={28} />
               </a>
-              <a href="https://tiktok.com" target="_blank" rel="noopener noreferrer" className="social-icon">
+              <a href="https://tiktok.com/@jesselovesmoviess" target="_blank" rel="noopener noreferrer" className="social-icon">
                 <Image src="/tiktok-icon.svg" alt="TikTok" width={28} height={28} />
               </a>
             </div>
