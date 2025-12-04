@@ -285,7 +285,7 @@ export default function TicketForm() {
       {/* Section Header */}
       <div className="text-center mb-6 sm:mb-8">
         <h2 className="tracking-text-lg text-base sm:text-lg text-white mb-2">Get Your Tickets</h2>
-        <p className="tracking-text text-[10px] text-white/50">DEC 22th, 2025, Vineyard MEGAPLEX</p>
+        <p className="tracking-text text-[10px] text-white/50">DEC 22nd, 2025, Vineyard MEGAPLEX</p>
       </div>
       
       <form onSubmit={handleSubmit}>

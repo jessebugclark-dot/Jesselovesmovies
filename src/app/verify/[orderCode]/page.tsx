@@ -82,7 +82,7 @@ export default async function VerifyTicketPage({ params }: Props) {
         <div className="bg-[#d4a84b] rounded-lg p-4 text-center mb-6">
           <div className="text-xs text-black/60 uppercase tracking-wider mb-1">Event</div>
           <div className="text-xl font-bold text-black italic">DEADARM</div>
-          <div className="text-sm text-black/80 mt-1">December 11th, 2025 • Vineyard MEGAPLEX</div>
+          <div className="text-sm text-black/80 mt-1">December 22nd, 2025 • Vineyard MEGAPLEX</div>
         </div>
 
         <div className="text-center text-xs text-gray-500">

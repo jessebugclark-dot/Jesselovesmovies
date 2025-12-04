@@ -112,7 +112,7 @@ async function generateTicketEmailHTML(order: Order): Promise<string> {
           <!-- Event Details -->
           <div style="background-color: #d4a84b; padding: 20px; border-radius: 8px; margin-bottom: 30px; text-align: center;">
             <div style="font-size: 12px; color: #000; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 5px; opacity: 0.7;">Screening Date</div>
-            <div style="font-size: 24px; font-weight: bold; color: #000;">December 11th, 2025</div>
+            <div style="font-size: 24px; font-weight: bold; color: #000;">December 22nd, 2025</div>
             <div style="font-size: 16px; color: #000; margin-top: 5px;">Vineyard MEGAPLEX</div>
             <div style="font-size: 20px; font-weight: bold; color: #000; margin-top: 10px;">${showTime}</div>
           </div>
@@ -168,7 +168,7 @@ Total Paid: $${order.total_amount.toFixed(2)}
 EVENT DETAILS
 -------------
 DEADARM Premiere
-December 11th, 2025 at ${showTime}
+December 22nd, 2025 at ${showTime}
 Vineyard MEGAPLEX
 
 IMPORTANT INFORMATION
