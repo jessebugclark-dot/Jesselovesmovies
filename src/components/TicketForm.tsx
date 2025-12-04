@@ -303,7 +303,7 @@ export default function TicketForm() {
           </div>
 
           {/* Number of Tickets */}
-          <div className="form-row">
+          <div className="form-row flex-row justify-between">
             <label htmlFor="numTickets" className="form-label flex-1 sm:flex-none sm:min-w-[140px]">Number of Tickets</label>
             <div className="flex items-center justify-end px-4 py-3">
               <button 
@@ -333,7 +333,7 @@ export default function TicketForm() {
           </div>
 
           {/* Show Time */}
-          <div className="form-row">
+          <div className="form-row flex-row justify-between">
             <span className="form-label flex-1 sm:flex-none sm:min-w-[140px]">Show Time</span>
             <div className="flex items-center gap-2 px-4 py-3">
               <button
@@ -369,7 +369,7 @@ export default function TicketForm() {
 
           {/* Seats Available */}
           {seats && (
-            <div className="form-row border-b-0 bg-white/[0.02]">
+            <div className="form-row border-b-0 bg-white/[0.02] flex-row justify-between">
               <span className="form-label flex-1 sm:flex-none sm:min-w-[140px]">Seats Available</span>
               <div className="px-4 py-3 flex items-center gap-4">
                 <span className={`text-sm ${currentShowSeats !== null && currentShowSeats < 20 ? 'text-red-400' : 'text-white/60'}`}>
@@ -388,7 +388,7 @@ export default function TicketForm() {
           )}
 
           {/* Subtotal */}
-          <div className="form-row border-b-0">
+          <div className="form-row border-b-0 flex-row justify-between">
             <span className="form-label flex-1 sm:flex-none sm:min-w-[140px]">Subtotal</span>
             <span className="px-4 py-3 text-white text-right text-lg font-medium">${subtotal.toFixed(2)}</span>
           </div>
