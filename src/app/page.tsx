@@ -1,4 +1,5 @@
 import TicketForm from '@/components/TicketForm';
+import TrailerPlayer from '@/components/TrailerPlayer';
 import Image from 'next/image';
 
 export default function Home() {
@@ -72,7 +73,7 @@ export default function Home() {
 
       {/* Trailer Section */}
       <section className="py-20 px-4 bg-black overflow-hidden">
-        <div className="relative flex justify-center items-center">
+        <div className="relative flex justify-center items-center min-h-[70vh]">
           {/* Fanned out background image */}
           <div className="absolute inset-0 flex justify-center items-center">
             <Image
@@ -85,23 +86,10 @@ export default function Home() {
           </div>
           
           {/* Video container */}
-          <div className="relative z-10 w-full max-w-sm aspect-[9/16] group cursor-pointer">
-            {/* Play Trailer overlay */}
-            <div className="absolute inset-0 flex flex-col items-center justify-center z-20 pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity bg-black/30">
-              <span className="tracking-[0.3em] text-white text-sm font-light mb-2">PLAY TRAILER</span>
-              <div className="w-12 h-12 rounded-full border-2 border-white flex items-center justify-center">
-                <svg className="w-5 h-5 text-white ml-1" fill="currentColor" viewBox="0 0 24 24">
-                  <path d="M8 5v14l11-7z"/>
-                </svg>
-              </div>
-            </div>
-            
-            <iframe
-              className="absolute inset-0 w-full h-full rounded-sm"
-              src="https://drive.google.com/file/d/1xI7zMz5VIl0fb9eqKT5S484WurOD-kjA/preview"
-              title="DEADARM Trailer"
-              allow="autoplay; encrypted-media"
-              allowFullScreen
+          <div className="relative z-10 h-[65vh] aspect-[9/16]">
+            <TrailerPlayer
+              thumbnailSrc="/thumbnail.png"
+              videoSrc="https://drive.google.com/file/d/1xI7zMz5VIl0fb9eqKT5S484WurOD-kjA/preview"
             />
           </div>
         </div>
