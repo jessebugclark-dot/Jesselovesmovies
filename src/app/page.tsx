@@ -33,7 +33,7 @@ export default function Home() {
         {/* Hero Content */}
         <div className="relative z-10 flex flex-col items-center justify-center min-h-[85vh] px-4">
           {/* Film Title */}
-          <h1 className="mb-8 w-[80%]">
+          <h1 className="mb-8 w-[100%]">
             <Image
               src="/title.png"
               alt="DEADARM"
