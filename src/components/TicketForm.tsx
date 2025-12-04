@@ -4,7 +4,6 @@ import { useState, useEffect } from 'react';
 
 type OrderConfirmation = {
   orderCode: string;
-  name: string;
   email: string;
   numTickets: number;
   totalAmount: number;
@@ -101,7 +100,6 @@ function CountdownTimer({ expiresAt, onExpire }: { expiresAt: string; onExpire: 
 }
 
 export default function TicketForm() {
-  const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [numTickets, setNumTickets] = useState(1);
   const [showTime, setShowTime] = useState('7PM-8PM');
@@ -144,7 +142,6 @@ export default function TicketForm() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          name,
           email,
           numTickets,
           showTime,
@@ -291,20 +288,6 @@ export default function TicketForm() {
       <form onSubmit={handleSubmit}>
         {/* Form Fields */}
         <div className="bg-[#0f0f0f]/80 backdrop-blur-sm border border-white/10 rounded-lg overflow-hidden">
-          {/* Venmo Username Field */}
-          <div className="form-row flex-col sm:flex-row">
-            <label htmlFor="name" className="form-label w-full sm:w-auto sm:min-w-[140px]">Venmo Username</label>
-            <input
-              type="text"
-              id="name"
-              required
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              className="form-input border-0 bg-transparent flex-1 w-full"
-              placeholder="@USERNAME"
-            />
-          </div>
-
           {/* Email Field */}
           <div className="form-row flex-col sm:flex-row">
             <label htmlFor="email" className="form-label w-full sm:w-auto sm:min-w-[140px]">Email</label>

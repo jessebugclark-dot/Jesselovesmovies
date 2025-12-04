@@ -30,10 +30,10 @@ async function getAvailableSeats(showTime: string): Promise<number> {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { name, email, numTickets, showTime = '7PM-8PM' } = body;
+    const { email, numTickets, showTime = '7PM-8PM' } = body;
 
     // Validation
-    if (!name || !email || !numTickets) {
+    if (!email || !numTickets) {
       return NextResponse.json(
         { error: 'Missing required fields' },
         { status: 400 }
@@ -97,12 +97,12 @@ export async function POST(request: NextRequest) {
     // Set reservation expiry (5 minutes from now)
     const reservedUntil = new Date(Date.now() + RESERVATION_MINUTES * 60 * 1000).toISOString();
 
-    // Create order
+    // Create order (use email as name for backwards compatibility)
     const { data: order, error } = await supabase
       .from('orders')
       .insert({
         order_code: orderCode,
-        name,
+        name: email,
         email,
         num_tickets: numTickets,
         total_amount: totalAmount,
@@ -129,7 +129,6 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({
       orderCode: order.order_code,
-      name: order.name,
       email: order.email,
       numTickets: order.num_tickets,
       totalAmount: order.total_amount,

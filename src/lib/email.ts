@@ -66,7 +66,7 @@ async function generateTicketEmailHTML(order: Order): Promise<string> {
         <div style="background-color: #111; padding: 40px 30px; border-radius: 0 0 10px 10px; border: 1px solid #333; border-top: none;">
           
           <p style="font-size: 16px; color: #ccc; margin-bottom: 20px;">
-            Hi <strong style="color: white;">${order.name}</strong>,
+            Hi <strong style="color: white;">${order.email}</strong>,
           </p>
           
           <p style="font-size: 16px; color: #999; margin-bottom: 30px;">
@@ -90,8 +90,8 @@ async function generateTicketEmailHTML(order: Order): Promise<string> {
             <div style="border-top: 1px solid #333; padding-top: 20px; margin-top: 15px;">
               <table style="width: 100%; border-collapse: collapse;">
                 <tr>
-                  <td style="color: #666; padding: 8px 0; font-size: 14px;">Ticket Holder</td>
-                  <td style="color: white; padding: 8px 0; text-align: right; font-weight: 600; font-size: 14px;">${order.name}</td>
+                  <td style="color: #666; padding: 8px 0; font-size: 14px;">Email</td>
+                  <td style="color: white; padding: 8px 0; text-align: right; font-weight: 600; font-size: 14px;">${order.email}</td>
                 </tr>
                 <tr>
                   <td style="color: #666; padding: 8px 0; font-size: 14px;">Number of Tickets</td>
@@ -153,14 +153,14 @@ function generateTicketEmailText(order: Order): string {
   return `
 DEADARM - YOUR TICKETS
 
-Hi ${order.name},
+Hi ${order.email},
 
 Thank you for your purchase! Your payment has been confirmed and your tickets are ready.
 
 TICKET DETAILS
 --------------
 Ticket Code: ${order.order_code}
-Ticket Holder: ${order.name}
+Email: ${order.email}
 Number of Tickets: ${order.num_tickets}
 Show Time: ${showTime}
 Total Paid: $${order.total_amount.toFixed(2)}
