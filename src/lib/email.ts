@@ -1,5 +1,4 @@
 import nodemailer from 'nodemailer';
-import QRCode from 'qrcode';
 import { Order } from './supabase';
 
 // Create reusable transporter
@@ -16,34 +15,10 @@ function createTransporter() {
 }
 
 /**
- * Generate QR code for ticket
- */
-async function generateTicketQR(orderCode: string): Promise<string> {
-  const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
-  const qrData = `${appUrl}/verify/${orderCode}`;
-  
-  try {
-    const qrCodeDataUrl = await QRCode.toDataURL(qrData, {
-      width: 300,
-      margin: 2,
-      color: {
-        dark: '#000000',
-        light: '#FFFFFF',
-      },
-    });
-    return qrCodeDataUrl;
-  } catch (error) {
-    console.error('Error generating QR code:', error);
-    return '';
-  }
-}
-
-/**
  * Generate HTML email template for ticket confirmation
  */
-async function generateTicketEmailHTML(order: Order): Promise<string> {
-  const qrCode = await generateTicketQR(order.order_code);
-  const showTime = order.show_time || '7PM';
+function generateTicketEmailHTML(order: Order): string {
+  const showTime = order.show_time || '7PM-8PM';
 
   return `
     <!DOCTYPE html>
@@ -79,13 +54,6 @@ async function generateTicketEmailHTML(order: Order): Promise<string> {
               <div style="font-size: 12px; color: #666; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 5px;">Ticket Code</div>
               <div style="font-size: 28px; font-weight: bold; color: white; font-family: monospace;">${order.order_code}</div>
             </div>
-            
-            ${qrCode ? `
-              <div style="text-align: center; margin-bottom: 20px;">
-                <img src="${qrCode}" alt="Ticket QR Code" style="max-width: 180px; height: auto; border-radius: 8px;" />
-                <div style="font-size: 11px; color: #666; margin-top: 10px;">Scan at entrance</div>
-              </div>
-            ` : ''}
             
             <div style="border-top: 1px solid #333; padding-top: 20px; margin-top: 15px;">
               <table style="width: 100%; border-collapse: collapse;">
@@ -123,7 +91,6 @@ async function generateTicketEmailHTML(order: Order): Promise<string> {
             <ul style="color: #999; margin: 0; padding-left: 20px; font-size: 14px; line-height: 1.8;">
               <li>Please arrive 15 minutes before showtime</li>
               <li>Present this email (digital or printed) at the entrance</li>
-              <li>Your QR code will be scanned for entry</li>
               <li>Seating is first-come, first-served</li>
             </ul>
           </div>
@@ -148,7 +115,7 @@ async function generateTicketEmailHTML(order: Order): Promise<string> {
  * Generate plain text version of ticket email
  */
 function generateTicketEmailText(order: Order): string {
-  const showTime = order.show_time || '7PM';
+  const showTime = order.show_time || '7PM-8PM';
 
   return `
 DEADARM - YOUR TICKETS
@@ -192,7 +159,7 @@ export async function sendTicketEmail(order: Order): Promise<boolean> {
   try {
     const transporter = createTransporter();
     
-    const htmlContent = await generateTicketEmailHTML(order);
+    const htmlContent = generateTicketEmailHTML(order);
     const textContent = generateTicketEmailText(order);
 
     const info = await transporter.sendMail({
