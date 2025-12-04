@@ -108,9 +108,34 @@ export default function TicketForm() {
   const [error, setError] = useState('');
   const [seats, setSeats] = useState<SeatAvailability | null>(null);
   const [expired, setExpired] = useState(false);
+  const [isPaid, setIsPaid] = useState(false);
 
   const ticketPrice = 10.0;
   const subtotal = numTickets * ticketPrice;
+
+  // Poll for payment status when order is confirmed
+  useEffect(() => {
+    if (!confirmation || expired || isPaid) return;
+
+    const checkPaymentStatus = async () => {
+      try {
+        const response = await fetch(`/api/orders/status?orderCode=${confirmation.orderCode}`);
+        if (response.ok) {
+          const data = await response.json();
+          if (data.isPaid) {
+            setIsPaid(true);
+          }
+        }
+      } catch (err) {
+        console.error('Failed to check payment status:', err);
+      }
+    };
+
+    // Check immediately, then every 5 seconds
+    checkPaymentStatus();
+    const interval = setInterval(checkPaymentStatus, 5000);
+    return () => clearInterval(interval);
+  }, [confirmation, expired, isPaid]);
 
   // Fetch seat availability
   useEffect(() => {
@@ -170,8 +195,60 @@ export default function TicketForm() {
   const handleStartOver = () => {
     setConfirmation(null);
     setExpired(false);
+    setIsPaid(false);
     setError('');
   };
+
+  // Payment confirmed/success state
+  if (isPaid && confirmation) {
+    return (
+      <div className="bg-[#0f0f0f]/90 backdrop-blur-sm border border-white/10 rounded-lg overflow-hidden p-6 sm:p-8 text-center">
+        <div className="w-20 h-20 rounded-full bg-green-500/20 border-2 border-green-500 flex items-center justify-center mx-auto mb-4">
+          <svg className="w-10 h-10 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+          </svg>
+        </div>
+        <h2 className="text-2xl font-bold text-green-500 mb-2">Payment Confirmed!</h2>
+        <p className="text-white/60 mb-6">
+          Your tickets have been sent to <span className="text-white font-medium">{confirmation.email}</span>
+        </p>
+        
+        <div className="bg-[#1a1a1a] border border-white/10 rounded-lg p-6 mb-6 text-left">
+          <div className="space-y-3">
+            <div className="flex justify-between">
+              <span className="text-white/50">Order Code</span>
+              <span className="text-white font-mono font-bold">{confirmation.orderCode}</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-white/50">Tickets</span>
+              <span className="text-white">{confirmation.numTickets}</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-white/50">Show Time</span>
+              <span className="text-gold font-medium">{confirmation.showTime}</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-white/50">Total Paid</span>
+              <span className="text-green-500 font-bold">${confirmation.totalAmount.toFixed(2)}</span>
+            </div>
+          </div>
+        </div>
+
+        <div className="bg-gold/10 border border-gold/30 rounded-lg p-4 mb-6">
+          <p className="text-gold text-sm">
+            📧 Check your email for your tickets. If you don&apos;t see them, check your spam folder.
+          </p>
+        </div>
+
+        <button
+          onClick={handleStartOver}
+          className="cta-button w-full bg-white/5"
+        >
+          Buy More Tickets
+        </button>
+      </div>
+    );
+  }
 
   // Expired state
   if (expired && confirmation) {
