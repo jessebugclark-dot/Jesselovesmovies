@@ -3,7 +3,7 @@ import { supabase } from '@/lib/supabase';
 import { generateOrderCode, calculateTotalAmount } from '@/lib/order-utils';
 
 const SEATS_PER_SHOWTIME = 220;
-const RESERVATION_MINUTES = 5;
+const RESERVATION_MINUTES = 10;
 
 // Get available seats for a showtime
 async function getAvailableSeats(showTime: string): Promise<number> {
@@ -94,7 +94,7 @@ export async function POST(request: NextRequest) {
 
     const totalAmount = calculateTotalAmount(numTickets);
     
-    // Set reservation expiry (5 minutes from now)
+    // Set reservation expiry (10 minutes from now)
     const reservedUntil = new Date(Date.now() + RESERVATION_MINUTES * 60 * 1000).toISOString();
 
     // Create order (use email as name for backwards compatibility)

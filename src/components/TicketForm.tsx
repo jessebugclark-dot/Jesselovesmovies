@@ -22,41 +22,6 @@ type SeatAvailability = {
   };
 };
 
-// Copy to clipboard component
-function CopyButton({ text, label }: { text: string; label: string }) {
-  const [copied, setCopied] = useState(false);
-
-  const handleCopy = async () => {
-    try {
-      await navigator.clipboard.writeText(text);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
-    } catch (err) {
-      console.error('Failed to copy:', err);
-    }
-  };
-
-  return (
-    <button
-      onClick={handleCopy}
-      className="w-full text-left group active:scale-[0.98] transition-transform"
-    >
-      <div className="bg-white/5 border border-white/10 p-4 rounded-lg hover:bg-white/10 active:bg-white/15 transition-colors">
-        <div className="flex items-center justify-between gap-3">
-          <span className="text-xl sm:text-2xl font-medium text-white break-all">{label}</span>
-          <span className={`text-xs px-2 py-1 rounded shrink-0 transition-colors ${
-            copied 
-              ? 'bg-green-500/20 text-green-400' 
-              : 'bg-white/10 text-white/50 group-hover:bg-white/20'
-          }`}>
-            {copied ? '✓ Copied!' : 'Tap to copy'}
-          </span>
-        </div>
-      </div>
-    </button>
-  );
-}
-
 // Countdown timer component
 function CountdownTimer({ expiresAt, onExpire }: { expiresAt: string; onExpire: () => void }) {
   const [timeLeft, setTimeLeft] = useState<number>(0);
@@ -261,7 +226,7 @@ export default function TicketForm() {
         </div>
         <h2 className="text-xl font-bold text-white mb-2">Reservation Expired</h2>
         <p className="text-white/60 mb-6">
-          Your 5-minute window to complete payment has expired. The seats have been released.
+          Your 10-minute window to complete payment has expired. The seats have been released.
         </p>
         <button
           onClick={handleStartOver}
@@ -275,7 +240,6 @@ export default function TicketForm() {
 
   if (confirmation) {
     const venmoHandle = '@Jesse-Clark-39';
-    const amountText = `$${confirmation.totalAmount.toFixed(2)}`;
     
     return (
       <div className="bg-[#0f0f0f]/90 backdrop-blur-sm border border-white/10 rounded-lg overflow-hidden">
@@ -292,44 +256,39 @@ export default function TicketForm() {
             </svg>
           </div>
           <h2 className="tracking-text-lg text-base sm:text-lg text-white mb-2">Seats Reserved!</h2>
-          <p className="text-sm text-white/60">Complete payment within 5 minutes to secure your tickets</p>
+          <p className="text-sm text-white/60 leading-relaxed">
+            Tap the button below to open Venmo, the needed payment details will already be pre-filled for you. Just hit send!
+          </p>
           <p className="text-sm text-gold mt-2">Show Time: {confirmation.showTime}</p>
         </div>
 
-        {/* Payment Instructions */}
+        {/* Main CTA - Open in Venmo */}
         <div className="p-6 sm:p-8 border-b border-white/10">
-          <h3 className="tracking-text text-[10px] text-gold mb-6">Payment Instructions</h3>
-          
-          <div className="space-y-5">
-            {/* Venmo Handle */}
-            <div>
-              <p className="text-[11px] text-white/50 mb-2 tracking-text">1. Open Venmo and send payment to:</p>
-              <CopyButton text={venmoHandle} label={venmoHandle} />
-            </div>
-
-            {/* Amount */}
-            <div>
-              <p className="text-[11px] text-white/50 mb-2 tracking-text">2. Amount to send:</p>
-              <CopyButton text={confirmation.totalAmount.toFixed(2)} label={amountText} />
-            </div>
-
-            {/* Note */}
-            <div>
-              <p className="text-[11px] text-white/50 mb-2 tracking-text">3. Include this exact note:</p>
-              <CopyButton text={confirmation.venmoNote} label={confirmation.venmoNote} />
-            </div>
-          </div>
-
-          {/* Open Venmo Button */}
           <a
             href={`venmo://paycharge?txn=pay&recipients=${encodeURIComponent(venmoHandle.replace('@', ''))}&amount=${confirmation.totalAmount.toFixed(2)}&note=${encodeURIComponent(confirmation.venmoNote)}`}
-            className="w-full mt-6 cta-button flex items-center justify-center gap-2 bg-[#008CFF] border-[#008CFF] hover:bg-[#0077DD] text-white"
+            className="w-full flex items-center justify-center gap-3 bg-[#008CFF] border-[#008CFF] hover:bg-[#0077DD] text-white text-lg py-4"
           >
-            Open in Venmo
-            <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
-              <path d="M10 6v2H5v11h11v-5h2v6a1 1 0 01-1 1H4a1 1 0 01-1-1V7a1 1 0 011-1h6zm11-3v8h-2V6.413l-7.293 7.294-1.414-1.414L17.586 5H13V3h8z"/>
+            <svg className="w-6 h-6" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M19.5 3c.75 1.24 1.08 2.52 1.08 4.14 0 5.16-4.4 11.88-7.98 16.6H5.64L2.5 3.36l6.18-.6 1.8 14.46c1.68-2.76 3.72-7.08 3.72-10.02 0-1.56-.26-2.64-.72-3.54L19.5 3z"/>
             </svg>
+            Open in Venmo
           </a>
+
+          {/* Payment Summary */}
+          <div className="mt-6 bg-white/5 border border-white/10 rounded-lg p-4">
+            <div className="flex justify-between items-center mb-2">
+              <span className="text-white/50 text-sm">Sending to</span>
+              <span className="text-white font-medium">{venmoHandle}</span>
+            </div>
+            <div className="flex justify-between items-center mb-2">
+              <span className="text-white/50 text-sm">Amount</span>
+              <span className="text-white font-bold text-lg">${confirmation.totalAmount.toFixed(2)}</span>
+            </div>
+            <div className="flex justify-between items-center">
+              <span className="text-white/50 text-sm">Note</span>
+              <span className="text-gold font-mono text-sm text-right">{confirmation.venmoNote}</span>
+            </div>
+          </div>
         </div>
 
         {/* What happens next */}
